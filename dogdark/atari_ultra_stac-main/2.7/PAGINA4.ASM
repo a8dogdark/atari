@@ -1,0 +1,49 @@
+//	icl "../base/sys_equates.m65"
+
+;
+pagina4_init=$03FD
+//	org pagina4_init
+.proc pagina4, pagina4_init
+GENDAT = $47
+	.BYTE $55,$55,$FE
+	LDA PORTB
+	ORA #$02
+	STA PORTB
+	LDA FIN
+	STA GENDAT
+	LDX #$0B
+MOVE
+	LDA TABLA_SIOV,X
+	STA $0300,X
+	DEX
+	BPL MOVE
+	JSR SIOV
+	BMI ERROR
+	CLC
+	RTS
+ERROR
+	LDX $BFFC
+	LDY $BFFD
+	STX $0230
+	STY $0231
+	LDY #$00
+LER
+	LDA TABLA,Y
+	STA ($58),Y
+	INY
+	CPY #27
+	BNE LER
+	LDA #$3C
+	STA PACTL
+LOOP
+	BNE LOOP
+TABLA
+	.SB "ERROR !!! CARGUE NUEVAMENTE"
+TABLA_SIOV
+	.BYTE $60,$00,$52,$40
+	.WORD $06FE
+	.BYTE $23,$00
+	.WORD l_load
+	.BYTE $00,$80
+FIN
+.endp

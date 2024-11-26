@@ -1,1 +1,0 @@
-#archivos de turbo software
