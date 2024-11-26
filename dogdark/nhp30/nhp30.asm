@@ -42,7 +42,7 @@ BANQUEOPRINCIPAL
     .SB "****************************************"
     .SB "*****************************FIN BANQUEO"
 MENSAJESPRINCIPAL
-    .SB +128,"                                        "   
+:40 .SB +128," "   
 AGREGOLOGO
     LDX #19
 AGREGOLOGO01
