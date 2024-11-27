@@ -1565,67 +1565,606 @@ Source: paginas.asm
    286 0463 00 80												.BY $00,$80
    287 0465												FINPAGINA4
    288 												.ENDP
-    11 2456												DISPLAY
-    12 2456 70 70 70										:3  .BY $70
-    13 2459 46											    .BY $46
-    14 245A 75 24											    .WO SHOW
-    15 245C 02 02 02 02 02 02 02 02 02 02 02 02 02 02						:14  .BY $02
-    16 246A 02 02 02 02 02 02 02 02									:8    .BY $02
-    17 2472 41											    .BY $41
-    18 2473 56 24											    .WO DISPLAY
-    19 2475												SHOW
-    20 2475 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00				:20 .SB " "
-    21 2489 51 52 52 52 52 52 52 52 52 52 52 52 52 52 52 52 52 52 52 52 52 52 52 52 52 52 52 52 +       .SB +32,"QRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRE"
-    22 24B1 7C 00 00 24 2F 27 24 21 32 2B 00 2D 35 2C 34 29 22 21 2E 23 2F 33 00 2E 28 30 00 13 +       .SB "|  DOGDARK MULTIBANCOS NHP 3.0 - 2025  |"
-    23 24D9 41 52 52 52 52 52 52 52 52 52 52 52 52 52 52 52 57 52 52 52 52 52 52 52 52 52 52 52 +       .SB +32,"ARRRRRRRRRRRRRRRWRRRRRRRRRRRRRRRRRRRRRRD"
-    24 2501 7C 2D 25 2D 2F 32 29 21 00 00 00 00 00 00 00 00 7C 00 00 00 00 00 00 00 00 00 00 00 +       .SB "|MEMORIA        |              ******* |"
-    25 2529 7C 22 21 2E 23 2F 33 00 24 29 33 30 2F 0E 00 00 7C 00 00 00 00 00 00 00 00 00 00 00 +       .SB "|BANCOS DISPO.  |                   ** |"
-    26 2551 7C 30 2F 32 34 22 00 25 2E 00 35 33 2F 00 00 00 7C 00 00 00 00 00 00 00 00 00 00 00 +       .SB "|PORTB EN USO   |                  $** |"
-    27 2579 7C 36 25 2C 2F 23 29 24 21 24 00 00 00 00 00 00 7C 00 00 00 00 00 00 00 00 00 00 16 +       .SB "|VELOCIDAD      |          600 BAUDIOS |"
-    28 25A1 7C 22 39 34 25 33 00 38 00 22 2C 2F 31 35 25 33 7C 00 00 00 00 00 00 00 00 00 00 00 +       .SB "|BYTES X BLOQUES|            251 BYTES |"
-    29 25C9 7C 22 39 34 25 33 00 2C 25 29 24 2F 33 00 00 00 7C 00 00 00 00 00 00 00 00 00 00 00 +       .SB "|BYTES LEIDOS   |              ******* |"
-    30 25F1 7C 22 2C 2F 31 35 25 33 00 27 32 21 22 21 32 00 7C 00 00 00 00 00 00 00 0A 0A 0A 0A +       .SB "|BLOQUES GRABAR |       **** RESTANTES |"
-    31 2619 7C 34 29 34 35 2C 2F 00 21 32 23 28 29 36 2F 00 7C 00 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A +       .SB "|TITULO ARCHIVO | ******************** |"
-    32 2641 7C 34 29 34 35 2C 2F 00 2F 30 23 29 2F 2E 21 2C 7C 00 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A +       .SB "|TITULO OPCIONAL| ******************** |"
-    33 2669 7C 26 35 25 2E 34 25 00 00 00 00 00 00 00 00 00 7C 00 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A +       .SB "|FUENTE         | ******************** |"
-    34 2691 5A 52 52 52 52 52 52 52 52 52 52 52 52 52 52 52 58 52 52 52 52 52 52 52 52 52 52 52 +       .SB +32,"ZRRRRRRRRRRRRRRRXRRRRRRRRRRRRRRRRRRRRRRC"
-    35 26B9												BANQUEO
-    36 26B9 29 2E 29 23 29 2F 00 22 21 2E 31 35 25 2F 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A +       .SB "INICIO BANQUEO**************************"  ;40
-    37 26E1 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A +       .SB "****************************************"  ;80
-    38 2709 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A +       .SB "****************************************"  ;120
-    39 2731 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A +       .SB "****************************************"  ;160
-    40 2759 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A +       .SB "****************************************"  ;200
-    41 2781 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A +       .SB "****************************************"  ;240
-    42 27A9 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A +       .SB "*****************************FIN BANQUEO"  ;280
-    43 27D1												MENSAJES
-    44 27D1 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 +   :40    .SB +128," "
-    45 27F9												ARMOLOGO
-    46 27F9 A2 13											    LDX #19
-    47 27FB												ARMOLOGO01
-    48 27FB BD 24 28										    LDA DATADISPLAY,X
-    49 27FE 9D 75 24										    STA SHOW,X
-    50 2801 CA											    DEX
-    51 2802 10 F7											    BPL ARMOLOGO01
-    52 2804 60											    RTS
-    53 2805												RESETER
-    54 2805 20 F9 27										    JSR ARMOLOGO
-    55 2808 60											    RTS
-    56 2809												START
-    57 2809 20 05 28										    JSR RESETER
-    58 280C A2 56											    LDX #<DISPLAY
-    59 280E A0 24											    LDY #>DISPLAY
-    60 2810 8E 30 02										    STX $230
-    61 2813 8C 31 02										    STY $231
-    62 2816 A9 60											    LDA #$60
-    63 2818 8D C6 02										    STA 710
-    64 281B 8D C8 02										    STA 712
-    65 281E 4C 1E 28										    JMP *
-    66 2821												INICIO
-    67 2821 4C 09 28										    JMP START
-    68 02E0-02E1> 21 28										    RUN INICIO
-    69 2824												DATADISPLAY
-    70 2824-2837> 00 E4 EF E7 E4									    .BY $00,$E4,$EF,$E7,$E4
-    71 2829 E1 F2 EB 00 00										    .BY $E1,$F2,$EB,$00,$00
-    72 282E 73 6F 66 74 77										    .BY $73,$6F,$66,$74,$77
-    73 2833 61 72 65 73 00										    .BY $61,$72,$65,$73,$00
-    74
+    11 2456												    ICL 'funciones.asm'
+Source: funciones.asm
+     1 												;FUNCIONES DEL SISTEMA
+     2 												;
+     3 												; COPIA LA ROM A LA RAM
+     4 												;
+     5 = B000											KEMBUFFERROMRAM =$B000
+     6 2456												ROMRAM
+     7 2456 A0 00												LDY #$00
+     8 2458												KEMLOOP1ROMRAM
+     9 2458 B9 00 E0											LDA $E000,Y
+    10 245B 99 00 B0											STA KEMBUFFERROMRAM,Y
+    11 245E B9 00 E1											LDA $E100,Y
+    12 2461 99 00 B1											STA KEMBUFFERROMRAM+$100,Y
+    13 2464 B9 00 E2											LDA $E200,Y
+    14 2467 99 00 B2											STA KEMBUFFERROMRAM+$200,Y
+    15 246A B9 00 E3											LDA $E300,Y
+    16 246D 99 00 B3											STA KEMBUFFERROMRAM+$300,Y
+    17 2470 C8												INY
+    18 2471 D0 E5												BNE KEMLOOP1ROMRAM
+    19 2473 A9 B0												LDA #>KEMBUFFERROMRAM
+    20 2475 8D F4 02											STA CHBAS
+    21 2478 8D 09 D4											STA CHBASE
+    22 247B A2 C0												LDX #$C0
+    23 247D 78												SEI
+    24 247E 8C 0E D4											STY $D40E
+    25 2481 86 CC												STX $CC
+    26 2483 84 CB												STY $CB
+    27 2485												LOOPROMRAM
+    28 2485 B1 CB												LDA ($CB),Y
+    29 2487 CE 01 D3											DEC $D301
+    30 248A 91 CB												STA ($CB),Y
+    31 248C EE 01 D3											INC $D301
+    32 248F C8												INY
+    33 2490 D0 F3												BNE LOOPROMRAM
+    34 2492 E6 CC												INC $CC
+    35 2494 F0 0C												BEQ @EXITROMRAM
+    36 2496 A5 CC												LDA $CC
+    37 2498 C9 D0												CMP #$D0
+    38 249A D0 E9												BNE LOOPROMRAM
+    39 249C A9 D8												LDA #$D8
+    40 249E 85 CC												STA $CC
+    41 24A0 D0 E3												BNE LOOPROMRAM
+    42 24A2												@EXITROMRAM
+    43 24A2 A9 E0												LDA #$E0
+    44 24A4 8D F4 02											STA CHBAS
+    45 24A7 8D 09 D4											STA CHBASE
+    46 24AA 98												TYA	//y está en cero, según el código de arriba
+    47 24AB												KEMLOOP2ROMRAM
+    48 24AB 99 00 B0											STA KEMBUFFERROMRAM,Y
+    49 24AE 99 00 B1											STA KEMBUFFERROMRAM+$100,Y
+    50 24B1 99 00 B2											STA KEMBUFFERROMRAM+$200,Y
+    51 24B4 99 00 B3											STA KEMBUFFERROMRAM+$300,Y
+    52 24B7 C8												INY
+    53 24B8 D0 F1												BNE KEMLOOP2ROMRAM
+    54 24BA CE 01 D3											DEC $D301
+    55 24BD A2 01												LDX #$01
+    56 24BF A0 4C												LDY #$4C
+    57 24C1 A9 13												LDA #$13
+    58 24C3 8E 17 EE											STX $EE17
+    59 24C6 8C 8F ED											STY $ED8F
+    60 24C9 8D 67 ED											STA $ED67
+    61 24CC A2 80												LDX #$80
+    62 24CE A0 03												LDY #$03
+    63 24D0 8E A3 EB											STX $EBA3
+    64 24D3 8C A8 EB											STY $EBA8
+    65 24D6 A0 04												LDY #$04
+    66 24D8 A9 EA												LDA #$EA
+    67 24DA												NOPROMRAM
+    68 24DA 99 85 ED											STA $ED85,Y
+    69 24DD 88												DEY
+    70 24DE 10 FA												BPL NOPROMRAM
+    71 24E0 A0 37												LDY #STACFROMRAM-STACIROMRAM
+    72 24E2												MOVEROMRAM
+    73 24E2 B9 F3 24											LDA STACIROMRAM,Y
+    74 24E5 99 EF EC											STA $ECEF,Y
+    75 24E8 88												DEY
+    76 24E9 10 F7												BPL MOVEROMRAM
+    77 24EB A9 40												LDA #$40
+    78 24ED 8D 0E D4											STA NMIEN
+    79 24F0 58												CLI
+    80 24F1 18												CLC
+    81 24F2 60												RTS
+    82 24F3												STACIROMRAM
+    83 24F3 A9 7D												LDA #$7D
+    84 24F5 A6 62												LDX $62
+    85 24F7 F0 02												BEQ CC0ROMRAM
+    86 24F9 A9 64												LDA #$64
+    87 24FB												CC0ROMRAM
+    88 24FB 18												CLC
+    89 24FC 7D 19 EE											ADC $EE19,X
+    90 24FF 88												DEY
+    91 2500 10 F9												BPL CC0ROMRAM
+    92 2502 18												CLC
+    93 2503 6D 12 03											ADC $0312
+    94 2506 38												SEC
+    95 2507 E9 64												SBC #$64
+    96 2509 90 1C												BCC CC3ROMRAM
+    97 250B 8D 12 03											STA $0312
+    98 250E A0 02												LDY #$02
+    99 2510 A2 06												LDX #$06
+   100 2512 A9 4F												LDA #$4F
+   101 2514												CC2ROMRAM
+   102 2514 6D 12 03											ADC $0312
+   103 2517 90 02												BCC CC1ROMRAM
+   104 2519 C8												INY
+   105 251A 18												CLC
+   106 251B												CC1ROMRAM
+   107 251B CA												DEX
+   108 251C D0 F6												BNE CC2ROMRAM
+   109 251E 8D EE 02											STA $02EE
+   110 2521 8C EF 02											STY $02EF
+   111 2524 4C 96 ED											JMP $ED96
+   112 2527												CC3ROMRAM
+   113 2527 4C 3D ED											JMP $ED3D
+   114 252A												STACFROMRAM
+   115
+   116 = 0600											TABMEMBANKS = $600
+   117 252A												BANKOS
+   118 252A 00											    .BY $00
+   119 252B												RY
+   120 252B 00 00 00										    .BY $00,$00,$00
+   121 252E												LEN
+   122 252E 00 00 00										    .BY $00,$00,$00
+   123 = 00CB											PCRSR   = $CB
+   124 												;Deteccion de memoria adicional
+   125 												;El programa verifica la 
+   126 												;presencia de una extension
+   127 												;de memoria basandose en los 
+   128 												;codigos de banco dBANK 
+   129 												;permitidos y guarda los bancos
+   130 												;encontrados desde la direccion
+   131 												;TABMEMBANKS+1.
+   132 												;El metodo de prueba excluye la 
+   133 												;posibilidad de duplicar 
+   134 												;cualquier banco de memoria
+   135 												;adicional.
+   136 												;La primera entrada en la tabla
+   137 												;TABMEMBANKS es el valor 
+   138 												;$FF, este es el codigo del
+   139 												;banco numero 0 en la memoria
+   140 												;primaria.
+   141 												;La tabla con los bancos de
+   142 												;memoria encontrados puede
+   143 												;contener como maximo 65
+   144 												;entradas.
+   145 												;(para 1 MB de memoria 
+   146 												;adicional).
+   147 												;El numero de bancos 
+   148 												;encontrados se devuelve en
+   149 												;el registro del acumulador
+   150 												;A.
+   151 												;numero maximo de bancos de
+   152 												;memoria
+   153 = 0040											MAXBANKS = 64		
+   154 2531												MEMORIA
+   155 2531 00 00 00										    .BY $00,$00,$00
+   156 2534												MEM
+   157 2534 A9 00											    LDA #$00
+   158 2536 8D 31 25										    STA MEMORIA
+   159 2539 8D 32 25										    STA MEMORIA+1
+   160 253C 8D 33 25										    STA MEMORIA+2
+   161 												;byte de la memoria primaria
+   162 253F AD FF 7F											LDA $7FFF	
+   163 2542 8D C4 25											STA TEMP
+   164 2545 A2 3F											    LDX #MAXBANKS-1
+   165 2547												S1 
+   166 2547 BD C5 25										    LDA DBANK,X
+   167 254A 8D 01 D3										    STA PORTB
+   168 254D AD FF 7F										    LDA $7FFF
+   169 2550 9D 00 06										    STA TABMEMBANKS,X
+   170 2553 CA											    DEX
+   171 2554 10 F1											    BPL S1
+   172 2556 A2 3F											    LDX #MAXBANKS-1
+   173 2558												S2 
+   174 2558 BD C5 25										    LDA DBANK,X
+   175 255B 8D 01 D3										    STA PORTB
+   176 255E 8D FF 7F										    STA $7FFF
+   177 2561 CA											    DEX
+   178 2562 10 F4											    BPL S2
+   179 												;volvemos a la memoria basica,
+   180 												;aqui debajo de $7FFF
+   181 												;escribimos el valor $FF
+   182 2564 A9 FF												LDA #$FF
+   183 2566 8D 01 D3											STA PORTB
+   184 2569 8D FF 7F											STA $7FFF
+   185 256C 8D 00 06											STA TABMEMBANKS ; primera
+   186 												;entrada en TABMEMBANKS = $FF
+   187 												;comprobamos la presencia de
+   188 												;bancos de memoria adicionales,
+   189 												;guardamos los bancos detectados
+   190 												;desde la direccion 
+   191 												;TABMEMBANKS+1 el registro
+   192 												;Y cuenta los bancos de memoria
+   193 												;encontrados
+   194 256F A0 00												LDY #0
+   195 2571 A2 3F											    LDX #MAXBANKS-1
+   196 2573												LOP	
+   197 2573 BD C5 25										    LDA DBANK,X
+   198 2576 8D 01 D3										    STA PORTB
+   199 2579 CD FF 7F										    CMP $7FFF
+   200 257C D0 07											    BNE SKP
+   201 257E 99 01 06											STA TABMEMBANKS+1,Y
+   202 2581 C8											    INY
+   203 2582 8C 2A 25										    STY BANKOS
+   204 2585												SKP
+   205 2585 CA											    DEX
+   206 2586 10 EB											    BPL LOP
+   207 2588 A2 3F											    LDX #MAXBANKS-1
+   208 258A												R3 
+   209 258A BD C5 25										    LDA DBANK,X
+   210 258D 8D 01 D3										    STA PORTB
+   211 2590 BD 00 06										    LDA TABMEMBANKS,X
+   212 2593 8D FF 7F										    STA $7FFF
+   213 2596 CA											    DEX
+   214 2597 10 F1											    BPL R3
+   215 												;Terminamos restaurando la 
+   216 												;memoria primaria.
+   217 2599 A9 FF											    LDA #$FF
+   218 259B 8D 01 D3										    STA PORTB
+   219 												;Restauramos el contenido 
+   220 259E A9 00												LDA #0		
+   221 												;antiguo de la celda de memoria
+   222 												;desde la direccion $7FFF en la
+   223 												;memoria primaria.
+   224 25A0 8D FF 7F											STA $7FFF
+   225 												;en regla el numero de bancos 
+   226 												;de memoria adicionales
+   227 												;encontrados
+   228 25A3 98												TYA		
+   229 25A4 AE 2A 25										    LDX BANKOS
+   230 25A7 CA											    DEX
+   231 25A8												CALMEM
+   232 25A8 AD 31 25										    LDA MEMORIA
+   233 25AB 69 00												ADC #$00
+   234 25AD 8D 31 25											STA MEMORIA
+   235 25B0 AD 32 25											LDA MEMORIA+1
+   236 25B3 69 40												ADC #$40
+   237 25B5 8D 32 25											STA MEMORIA+1
+   238 25B8 AD 33 25											LDA MEMORIA+2
+   239 25BB 69 00												ADC #$00
+   240 25BD 8D 33 25											STA MEMORIA+2
+   241 25C0 CA												DEX
+   242 25C1 10 E5											    BPL CALMEM
+   243 25C3 60											    RTS
+   244 												;La tabla DBANK contiene codigos
+   245 												;permitidos para los bancos
+   246 												;habilitados para PORTB
+   247 25C4												TEMP
+   248 25C4 00											    .BY $00
+   249 25C5												DBANK
+   250 25C5 E3 C3 A3 83 63 43 23 03										.BY $E3,$C3,$A3,$83,$63,$43,$23,$03
+   251 25CD E7 C7 A7 87 67 47 27 07									    .BY $E7,$C7,$A7,$87,$67,$47,$27,$07
+   252 25D5 EB CB AB 8B 6B 4B 2B 0B									    .BY $EB,$CB,$AB,$8B,$6B,$4B,$2B,$0B
+   253 25DD EF CF AF 8F 6F 4F 2F 0F									    .BY $EF,$CF,$AF,$8F,$6F,$4F,$2F,$0F
+   254 25E5 ED CD AD 8D 6D 4D 2D 0D									    .BY $ED,$CD,$AD,$8D,$6D,$4D,$2D,$0D
+   255 25ED E9 C9 A9 89 69 49 29 09									    .BY $E9,$C9,$A9,$89,$69,$49,$29,$09
+   256 25F5 E5 C5 A5 85 65 45 25 05									    .BY $E5,$C5,$A5,$85,$65,$45,$25,$05
+   257 25FD E1 C1 A1 81 61 41 21 01									    .BY $E1,$C1,$A1,$81,$61,$41,$21,$01
+   258
+   259 												;CONVIERTE BYTES A ATASCII
+   260 2605												RESATASCII
+   261 2605 00 00 00 00 00 00 00 00										.BYTE $00,$00,$00,$00,$00,$00,$00,$00
+   262 260D												RESBCD
+   263 260D 00 00 00 00											.BYTE $00,$00,$00,$00
+   264 2611												VAL	
+   265 2611 00 00 00											.BYTE $00,$00,$00
+   266 2614												LIMPIORES
+   267 2614 A2 07												LDX #7
+   268 2616 A9 00												LDA #0
+   269 2618												LIMPIORES01
+   270 2618 9D 05 26											STA RESATASCII,X
+   271 261B CA												DEX
+   272 261C 10 FA												BPL LIMPIORES01
+   273 261E A2 03												LDX #3
+   274 2620												LIMPIORES02
+   275 2620 9D 0D 26											STA RESBCD,X
+   276 2623 9D 9A 26											STA HEXATASCII,X
+   277 2626 CA												DEX
+   278 2627 10 F7												BPL LIMPIORES02
+   279 2629 60												RTS
+   280 262A												LIMPIOVAL
+   281 262A A2 02												LDX #2
+   282 262C A9 00												LDA #$00
+   283 262E												LIMPIOVAL01
+   284 262E 9D 11 26											STA VAL,X
+   285 2631 CA												DEX
+   286 2632 10 FA												BPL LIMPIOVAL01
+   287 2634 60												RTS
+   288 												; Convert an 16 bit binary value into a 24bit BCD value
+   289 2635												BIN2BCD
+   290 2635 20 14 26											JSR LIMPIORES
+   291 2638 A9 00												LDA #0		  ;Clear the result area
+   292 263A 8D 0D 26											STA RESBCD+0
+   293 263D 8D 0E 26											STA RESBCD+1
+   294 2640 8D 0F 26											STA RESBCD+2
+   295 2643 8D 10 26											STA RESBCD+3
+   296 2646 A2 18												LDX #24		 ;Setup the bit counter
+   297 2648 F8												SED			 ;Enter decimal mode
+   298 2649												LOOPHEX
+   299 2649 0E 11 26											ASL VAL+0	   ;Shift a bit out of the binary
+   300 264C 2E 12 26											ROL VAL+1
+   301 264F 2E 13 26											ROL VAL+2	   ;... value
+   302 2652 AD 0D 26											LDA RESBCD+0	   ;And add it into the result, doubling
+   303 2655 6D 0D 26											ADC RESBCD+0	   ;... it at the same time
+   304 2658 8D 0D 26											STA RESBCD+0
+   305 265B AD 0E 26											LDA RESBCD+1
+   306 265E 6D 0E 26											ADC RESBCD+1
+   307 2661 8D 0E 26											STA RESBCD+1
+   308 2664 AD 0F 26											LDA RESBCD+2
+   309 2667 6D 0F 26											ADC RESBCD+2
+   310 266A 8D 0F 26											STA RESBCD+2
+   311 266D AD 10 26											LDA RESBCD+3
+   312 2670 6D 10 26											ADC RESBCD+3
+   313 2673 8D 10 26											STA RESBCD+3
+   314 2676 CA												DEX			 ;More bits to process?
+   315 2677 D0 D0												BNE LOOPHEX
+   316 2679 D8												CLD			 ;Leave decimal mode
+   317 													;BRK
+   318 267A												BCD2ATASCII
+   319 267A A2 04												LDX #4
+   320 267C A0 00												LDY #0
+   321 267E												LOOP2
+   322 267E BD 0C 26											LDA RESBCD-1,X
+   323 2681 4A												LSR
+   324 2682 4A												LSR
+   325 2683 4A												LSR
+   326 2684 4A												LSR
+   327 2685 09 10												ORA #$10
+   328 2687 99 05 26											STA RESATASCII,Y
+   329 268A BD 0C 26											LDA RESBCD-1,X
+   330 268D 29 0F												AND #$0F
+   331 268F 09 10												ORA #$10
+   332 2691 99 06 26											STA RESATASCII+1,Y
+   333 2694 C8												INY
+   334 2695 C8												INY
+   335 2696 CA												DEX
+   336 2697 D0 E5												BNE LOOP2
+   337 2699 60												RTS
+   338
+   339 269A												HEXATASCII
+   340 269A 00 00 00 00											.BYTE $00,$00,$00,$00
+   341 												;
+   342 269E												BIN3BCD
+   343 269E 20 14 26											JSR LIMPIORES
+   344 26A1 A2 01												LDX #1	;X BYTES DE INDICE
+   345 26A3 A0 00												LDY #0
+   346 26A5												ROTATE
+   347 												;OBTENEMOS EL NIBBLE ALTO
+   348 26A5 BD 11 26											LDA VAL,X
+   349 26A8 4A												LSR 
+   350 26A9 4A												LSR
+   351 26AA 4A												LSR
+   352 26AB 4A												LSR
+   353 												;GUARDAMOS EL NIBLE ALTO
+   354 26AC 99 9A 26											STA HEXATASCII,Y
+   355 												;AHORA OBTENEMOS EL NYBBLE BAJO
+   356 26AF BD 11 26											LDA VAL,X
+   357 26B2 29 0F												AND #$0F	;NYBBLE BAJO
+   358 26B4 C8												INY
+   359 26B5 99 9A 26											STA HEXATASCII,Y
+   360 26B8 C8												INY
+   361 26B9 CA												DEX
+   362 26BA 10 E9												BPL ROTATE
+   363 26BC A0 00												LDY #0
+   364 26BE A2 03												LDX #3
+   365 26C0												BYTEHEX
+   366 26C0 B9 9A 26											LDA HEXATASCII,Y
+   367 26C3 C9 0A												CMP #$0A 
+   368 26C5 90 02												BCC ADD48
+   369 26C7 69 06												ADC #$06 ; "A-0"
+   370 26C9												ADD48
+   371 26C9 69 10												ADC #$10
+   372 26CB 99 9A 26											STA HEXATASCII,Y
+   373 26CE C8												INY
+   374 26CF CA												DEX
+   375 26D0 10 EE												BPL BYTEHEX
+   376 26D2 60												RTS
+   377 												;************************************************
+   378 												;FUNCION QUE NOS PERMITE PODER CONVERTIR UN BYTE
+   379 												;EN ATASCII, USADO PARA INGRESO DE TITULOS Y
+   380 												;FUENTE, NO TIENE LIMITACIONES MAYORES EN LAS
+   381 												;PULSACIONES DEL TECLADO
+   382 												;************************************************
+   383 26D3												ASCINT
+   384 26D3 C9 20												CMP #32
+   385 26D5 90 12												BCC ADD64
+   386 26D7 C9 60												CMP #96
+   387 26D9 90 13												BCC SUB32
+   388 26DB C9 80												CMP #128
+   389 26DD 90 12												BCC REMAIN
+   390 26DF C9 A0												CMP #160
+   391 26E1 90 06												BCC ADD64
+   392 26E3 C9 E0												CMP #224
+   393 26E5 90 07												BCC SUB32
+   394 26E7 B0 08												BCS REMAIN
+   395 26E9												ADD64
+   396 26E9 18												CLC
+   397 26EA 69 40												ADC #64
+   398 26EC 90 03												BCC REMAIN
+   399 26EE												SUB32
+   400 26EE 38												SEC
+   401 26EF E9 20												SBC #32
+   402 26F1												REMAIN
+   403 26F1 60												RTS
+   404 												;************************************************
+   405 												;RUTINA QUE NOS PERMMITE PODER INGRESAR INFORMA-
+   406 												;CION A UN CAMPO ESPECIFICO YA ANTES DECLARADO
+   407 												;MOSTRANDO UN CURSOR EN FORMA PARPADEANTE
+   408 												;************************************************
+   409 												;
+   410 												;************************************************
+   411 												;CURSOR PARPADEANTE
+   412 												;************************************************
+   413 26F2												FLSH
+   414 26F2 AC 2B 25											LDY RY
+   415 26F5 B1 CB												LDA (PCRSR),Y
+   416 26F7 49 3F												EOR #63
+   417 26F9 91 CB												STA (PCRSR),Y
+   418 26FB A9 10												LDA #$10
+   419 26FD 8D 1A 02											STA $021A
+   420 2700 60												RTS
+   421 												;************************************************
+   422 												;ABRE PERIFERICO TECLADO
+   423 												;************************************************
+   424 2701												OPENK
+   425 2701 A9 FF												LDA #255
+   426 2703 8D FC 02											STA 764
+   427 2706 A2 10												LDX #$10
+   428 2708 A9 03												LDA #$03
+   429 270A 9D 42 03											STA $0342,X
+   430 270D 9D 45 03											STA $0345,X
+   431 2710 A9 26												LDA #$26
+   432 2712 9D 44 03											STA $0344,X
+   433 2715 A9 04												LDA #$04
+   434 2717 9D 4A 03											STA $034A,X
+   435 271A 20 56 E4											JSR $E456
+   436 271D A9 07												LDA #$07
+   437 271F 9D 42 03											STA $0342,X
+   438 2722 A9 00												LDA #$00
+   439 2724 9D 48 03											STA $0348,X
+   440 2727 9D 49 03											STA $0349,X
+   441 272A 8D 2B 25											STA RY
+   442 272D 60												RTS
+   443 												;************************************************
+   444 												;RUTINA QUE LEE LO TECLEADO
+   445 												;************************************************
+   446 272E												RUTLEE
+   447 272E A2 F2												LDX # <FLSH
+   448 2730 A0 26												LDY # >FLSH
+   449 2732 A9 10												LDA #$10
+   450 2734 8E 28 02											STX $0228
+   451 2737 8C 29 02											STY $0229
+   452 273A 8D 1A 02											STA $021A
+   453 273D												NOGETEC
+   454 273D 20 01 27											JSR OPENK
+   455 2740												GETEC
+   456 2740 20 56 E4											JSR $E456
+   457 2743 C9 7E												CMP #$7E	
+   458 2745 D0 14												BNE C0		;ES DIFERENTE A DELETE
+   459 2747 AC 2B 25											LDY RY
+   460 274A F0 F4												BEQ GETEC
+   461 274C A9 00												LDA #$00
+   462 274E 91 CB												STA (PCRSR),Y
+   463 2750 A9 3F												LDA #63		;$3F
+   464 2752 88												DEY
+   465 2753 91 CB												STA (PCRSR),Y
+   466 2755 CE 2B 25											DEC RY
+   467 2758 4C 40 27											JMP GETEC
+   468 275B												C0
+   469 275B C9 9B												CMP #155	;$9B RETURN
+   470 275D F0 12												BEQ C2
+   471 275F 20 D3 26											JSR ASCINT
+   472 2762 AC 2B 25											LDY RY
+   473 2765 91 CB												STA (PCRSR),Y
+   474 2767 C0 14												CPY #20		;#14
+   475 2769 F0 03												BEQ C1
+   476 276B EE 2B 25											INC RY
+   477 276E												C1
+   478 276E 4C 40 27											JMP GETEC
+   479 2771												C2
+   480 2771 20 7F 27											JSR CLOSE
+   481 2774 A9 00												LDA #$00
+   482 2776 8D 1A 02											STA $021A
+   483 2779 AC 2B 25											LDY RY
+   484 277C 91 CB												STA (PCRSR),Y
+   485 277E												FINRUTLEE
+   486 277E 60												RTS
+    12 277F												    ICL 'cargar.asm'
+Source: cargar.asm
+     1 												;************************************************
+     2 												;FUNCION QUE CIERRA PERIFERICOS
+     3 												;************************************************
+     4 277F												CLOSE
+     5 277F A2 10												LDX #$10
+     6 2781 A9 0C												LDA #$0C
+     7 2783 9D 42 03											STA $0342,X
+     8 2786 4C 56 E4											JMP $E456
+    13 2789												    ICL 'grabar.asm'
+Source: grabar.asm
+    14 2789												DISPLAY
+    15 2789 70 70 70										:3  .BY $70
+    16 278C 46											    .BY $46
+    17 278D A8 27											    .WO SHOW
+    18 278F 02 02 02 02 02 02 02 02 02 02 02 02 02 02						:14  .BY $02
+    19 279D 02 02 02 02 02 02 02 02									:8    .BY $02
+    20 27A5 41											    .BY $41
+    21 27A6 89 27											    .WO DISPLAY
+    22 27A8												SHOW
+    23 27A8 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00				:20 .SB " "
+    24 27BC 51 52 52 52 52 52 52 52 52 52 52 52 52 52 52 52 52 52 52 52 52 52 52 52 52 52 52 52 +       .SB +32,"QRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRE"
+    25 27E4 7C 00 00 24 2F 27 24 21 32 2B 00 2D 35 2C 34 29 22 21 2E 23 2F 33 00 2E 28 30 00 13 +       .SB "|  DOGDARK MULTIBANCOS NHP 3.0 - 2025  |"
+    26 280C 41 52 52 52 52 52 52 52 52 52 52 52 52 52 52 52 57 52 52 52 52 52 52 52 52 52 52 52 +       .SB +32,"ARRRRRRRRRRRRRRRWRRRRRRRRRRRRRRRRRRRRRRD"
+    27 2834 7C 2D 25 2D 2F 32 29 21 00 00 00 00 00 00 00 00 7C 00 00 00 00 00 00 00 00 00 00 00 +       .SB "|MEMORIA        |              "
+    28 2853												MEMORIAPR
+    29 2853 0A 0A 0A 0A 0A 0A 0A 00 7C								    .SB "******* |"
+    30 285C 7C 22 21 2E 23 2F 33 00 24 29 33 30 2F 0E 00 00 7C 00 00 00 00 00 00 00 00 00 00 00 +       .SB "|BANCOS DISPO.  |                   "
+    31 2880												BANCOSPR
+    32 2880 0A 0A 00 7C										    .SB "** |"
+    33 2884 7C 30 2F 32 34 22 00 25 2E 00 35 33 2F 00 00 00 7C 00 00 00 00 00 00 00 00 00 00 00 +       .SB "|PORTB EN USO   |                  $"
+    34 28A8												PORTBPR
+    35 28A8 0A 0A 00 7C										    .SB "** |"
+    36 28AC 7C 36 25 2C 2F 23 29 24 21 24 00 00 00 00 00 00 7C 00 00 00 00 00 00 00 00 00 00	    .SB "|VELOCIDAD      |          "
+    37 28C7												BAUDIOSPR
+    38 28C7 16 10 10 00 22 21 35 24 29 2F 33 00 7C							    .SB "600 BAUDIOS |"
+    39 28D4 7C 22 39 34 25 33 00 38 00 22 2C 2F 31 35 25 33 7C 00 00 00 00 00 00 00 00 00 00 00 +       .SB "|BYTES X BLOQUES|            "
+    40 28F1												BYTESPR
+    41 28F1 12 15 11 00 22 39 34 25 33 00 7C							    .SB "251 BYTES |"
+    42 28FC 7C 22 39 34 25 33 00 2C 25 29 24 2F 33 00 00 00 7C 00 00 00 00 00 00 00 00 00 00 00 +       .SB "|BYTES LEIDOS   |              "
+    43 291B												BYTESLEIDOSPR
+    44 291B 0A 0A 0A 0A 0A 0A 0A 00 7C								    .SB "******* |"
+    45 2924 7C 22 2C 2F 31 35 25 33 00 27 32 21 22 21 32 00 7C 00 00 00 00 00 00 00			    .SB "|BLOQUES GRABAR |       "
+    46 293C												BLOQUESLEIDOSPR
+    47 293C 0A 0A 0A 0A 00 32 25 33 34 21 2E 34 25 33 00 7C						    .SB "**** RESTANTES |"
+    48 294C 7C 34 29 34 35 2C 2F 00 21 32 23 28 29 36 2F 00 7C 00					    .SB "|TITULO ARCHIVO | "
+    49 295E												TITULOARPR
+    50 295E 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 00 7C			    .SB "******************** |"
+    51 2974 7C 34 29 34 35 2C 2F 00 2F 30 23 29 2F 2E 21 2C 7C 00					    .SB "|TITULO OPCIONAL| "
+    52 2986												TITULOOPPR
+    53 2986 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 00 7C			    .SB "******************** |"
+    54 299C 7C 26 35 25 2E 34 25 00 00 00 00 00 00 00 00 00 7C 00					    .SB "|FUENTE         | "
+    55 29AE												FUENTEPR
+    56 29AE 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 00 7C			    .SB "******************** |"
+    57 29C4 5A 52 52 52 52 52 52 52 52 52 52 52 52 52 52 52 58 52 52 52 52 52 52 52 52 52 52 52 +       .SB +32,"ZRRRRRRRRRRRRRRRXRRRRRRRRRRRRRRRRRRRRRRC"
+    58 29EC												BANQUEO
+    59 29EC 29 2E 29 23 29 2F 00 22 21 2E 31 35 25 2F 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A +       .SB "INICIO BANQUEO**************************"  ;40
+    60 2A14 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A +       .SB "****************************************"  ;80
+    61 2A3C 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A +       .SB "****************************************"  ;120
+    62 2A64 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A +       .SB "****************************************"  ;160
+    63 2A8C 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A +       .SB "****************************************"  ;200
+    64 2AB4 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A +       .SB "****************************************"  ;240
+    65 2ADC 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A 0A +       .SB "*****************************FIN BANQUEO"  ;280
+    66 2B04												MENSAJES
+    67 2B04 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 +   :40    .SB +128," "
+    68 2B2C												ARMOLOGO
+    69 2B2C A2 13											    LDX #19
+    70 2B2E												ARMOLOGO01
+    71 2B2E BD 80 2B										    LDA DATADISPLAY,X
+    72 2B31 9D A8 27										    STA SHOW,X
+    73 2B34 CA											    DEX
+    74 2B35 10 F7											    BPL ARMOLOGO01
+    75 2B37 60											    RTS
+    76 												;FUUNCIONES DE LIMPIEZA
+    77 2B38												LIMPIOBANQUEO
+    78 2B38 A9 00											    LDA #$00
+    79 2B3A A2 27											    LDX #39
+    80 2B3C												LIMPIOBANQUEO01
+    81 2B3C 9D EC 29										    STA BANQUEO,X
+    82 2B3F 9D 14 2A										    STA BANQUEO+40,X
+    83 2B42 9D 3C 2A										    STA BANQUEO+80,X
+    84 2B45 9D 64 2A										    STA BANQUEO+120,X
+    85 2B48 9D 8C 2A										    STA BANQUEO+160,X
+    86 2B4B 9D B4 2A										    STA BANQUEO+200,X
+    87 2B4E 9D DC 2A										    STA BANQUEO+240,X
+    88 2B51 CA											    DEX
+    89 2B52 10 E8											    BPL LIMPIOBANQUEO01
+    90 2B54 60											    RTS
+    91 2B55												RESETER
+    92 2B55 20 2C 2B										    JSR ARMOLOGO
+    93 2B58 20 38 2B										    JSR LIMPIOBANQUEO
+    94 2B5B 60											    RTS
+    95 2B5C												START
+    96 2B5C 20 55 2B										    JSR RESETER
+    97 2B5F A2 89											    LDX #<DISPLAY
+    98 2B61 A0 27											    LDY #>DISPLAY
+    99 2B63 8E 30 02										    STX $230
+   100 2B66 8C 31 02										    STY $231
+   101 2B69 A9 60											    LDA #$60
+   102 2B6B 8D C6 02										    STA 710
+   103 2B6E 8D C8 02										    STA 712
+   104 2B71 4C 71 2B										    JMP *
+   105 2B74												INICIO
+   106 2B74 20 7F 27										    JSR CLOSE
+   107 2B77 20 56 24										    JSR ROMRAM
+   108 2B7A 20 34 25										    JSR MEM
+   109 2B7D 4C 5C 2B										    JMP START
+   110 02E0-02E1> 74 2B										    RUN INICIO
+   111 2B80												DATADISPLAY
+   112 2B80-2B93> 00 E4 EF E7 E4									    .BY $00,$E4,$EF,$E7,$E4
+   113 2B85 E1 F2 EB 00 00										    .BY $E1,$F2,$EB,$00,$00
+   114 2B8A 73 6F 66 74 77										    .BY $73,$6F,$66,$74,$77
+   115 2B8F 61 72 65 73 00										    .BY $61,$72,$65,$73,$00
+   116

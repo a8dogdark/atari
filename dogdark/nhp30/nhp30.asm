@@ -8,6 +8,9 @@ MYDOS
     INI MYDOS
     ORG $2000
     ICL 'paginas.asm'
+    ICL 'funciones.asm'
+    ICL 'cargar.asm'
+    ICL 'grabar.asm'
 DISPLAY
 :3  .BY $70
     .BY $46
@@ -21,16 +24,36 @@ SHOW
     .SB +32,"QRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRE"
     .SB "|  DOGDARK MULTIBANCOS NHP 3.0 - 2025  |"
     .SB +32,"ARRRRRRRRRRRRRRRWRRRRRRRRRRRRRRRRRRRRRRD"
-    .SB "|MEMORIA        |              ******* |"
-    .SB "|BANCOS DISPO.  |                   ** |"
-    .SB "|PORTB EN USO   |                  $** |"
-    .SB "|VELOCIDAD      |          600 BAUDIOS |"
-    .SB "|BYTES X BLOQUES|            251 BYTES |"
-    .SB "|BYTES LEIDOS   |              ******* |"
-    .SB "|BLOQUES GRABAR |       **** RESTANTES |"
-    .SB "|TITULO ARCHIVO | ******************** |"
-    .SB "|TITULO OPCIONAL| ******************** |"
-    .SB "|FUENTE         | ******************** |"
+    .SB "|MEMORIA        |              "
+MEMORIAPR
+    .SB "******* |"
+    .SB "|BANCOS DISPO.  |                   "
+BANCOSPR
+    .SB "** |"
+    .SB "|PORTB EN USO   |                  $"
+PORTBPR
+    .SB "** |"
+    .SB "|VELOCIDAD      |          "
+BAUDIOSPR
+    .SB "600 BAUDIOS |"
+    .SB "|BYTES X BLOQUES|            "
+BYTESPR
+    .SB "251 BYTES |"
+    .SB "|BYTES LEIDOS   |              "
+BYTESLEIDOSPR
+    .SB "******* |"
+    .SB "|BLOQUES GRABAR |       "
+BLOQUESLEIDOSPR
+    .SB "**** RESTANTES |"
+    .SB "|TITULO ARCHIVO | "
+TITULOARPR
+    .SB "******************** |"
+    .SB "|TITULO OPCIONAL| "
+TITULOOPPR
+    .SB "******************** |"
+    .SB "|FUENTE         | "
+FUENTEPR
+    .SB "******************** |"
     .SB +32,"ZRRRRRRRRRRRRRRRXRRRRRRRRRRRRRRRRRRRRRRC"
 BANQUEO
     .SB "INICIO BANQUEO**************************"  ;40
@@ -50,8 +73,24 @@ ARMOLOGO01
     DEX
     BPL ARMOLOGO01
     RTS
+;FUUNCIONES DE LIMPIEZA
+LIMPIOBANQUEO
+    LDA #$00
+    LDX #39
+LIMPIOBANQUEO01
+    STA BANQUEO,X
+    STA BANQUEO+40,X
+    STA BANQUEO+80,X
+    STA BANQUEO+120,X
+    STA BANQUEO+160,X
+    STA BANQUEO+200,X
+    STA BANQUEO+240,X
+    DEX
+    BPL LIMPIOBANQUEO01
+    RTS
 RESETER
     JSR ARMOLOGO
+    JSR LIMPIOBANQUEO
     RTS
 START
     JSR RESETER
@@ -64,6 +103,9 @@ START
     STA 712
     JMP *
 INICIO
+    JSR CLOSE
+    JSR ROMRAM
+    JSR MEM
     JMP START
     RUN INICIO
 DATADISPLAY
