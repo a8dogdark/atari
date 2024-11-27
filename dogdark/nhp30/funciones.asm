@@ -374,3 +374,113 @@ ADD48
 	DEX
 	BPL BYTEHEX
 	RTS
+;************************************************
+;FUNCION QUE NOS PERMITE PODER CONVERTIR UN BYTE
+;EN ATASCII, USADO PARA INGRESO DE TITULOS Y
+;FUENTE, NO TIENE LIMITACIONES MAYORES EN LAS
+;PULSACIONES DEL TECLADO
+;************************************************
+ASCINT
+	CMP #32
+	BCC ADD64
+	CMP #96
+	BCC SUB32
+	CMP #128
+	BCC REMAIN
+	CMP #160
+	BCC ADD64
+	CMP #224
+	BCC SUB32
+	BCS REMAIN
+ADD64
+	CLC
+	ADC #64
+	BCC REMAIN
+SUB32
+	SEC
+	SBC #32
+REMAIN
+	RTS
+;************************************************
+;RUTINA QUE NOS PERMMITE PODER INGRESAR INFORMA-
+;CION A UN CAMPO ESPECIFICO YA ANTES DECLARADO
+;MOSTRANDO UN CURSOR EN FORMA PARPADEANTE
+;************************************************
+;
+;************************************************
+;CURSOR PARPADEANTE
+;************************************************
+FLSH
+	LDY RY
+	LDA (PCRSR),Y
+	EOR #63
+	STA (PCRSR),Y
+	LDA #$10
+	STA $021A
+	RTS
+;************************************************
+;ABRE PERIFERICO TECLADO
+;************************************************
+OPENK
+	LDA #255
+	STA 764
+	LDX #$10
+	LDA #$03
+	STA $0342,X
+	STA $0345,X
+	LDA #$26
+	STA $0344,X
+	LDA #$04
+	STA $034A,X
+	JSR $E456
+	LDA #$07
+	STA $0342,X
+	LDA #$00
+	STA $0348,X
+	STA $0349,X
+	STA RY
+	RTS
+;************************************************
+;RUTINA QUE LEE LO TECLEADO
+;************************************************
+RUTLEE
+	LDX # <FLSH
+	LDY # >FLSH
+	LDA #$10
+	STX $0228
+	STY $0229
+	STA $021A
+NOGETEC
+	JSR OPENK
+GETEC
+	JSR $E456
+	CMP #$7E	
+	BNE C0		;ES DIFERENTE A DELETE
+	LDY RY
+	BEQ GETEC
+	LDA #$00
+	STA (PCRSR),Y
+	LDA #63		;$3F
+	DEY
+	STA (PCRSR),Y
+	DEC RY
+	JMP GETEC
+C0
+	CMP #155	;$9B RETURN
+	BEQ C2
+	JSR ASCINT
+	LDY RY
+	STA (PCRSR),Y
+	CPY #20		;#14
+	BEQ C1
+	INC RY
+C1
+	JMP GETEC
+C2
+	JSR CLOSE
+	LDA #$00
+	STA $021A
+	LDY RY
+	STA (PCRSR),Y
+FINRUTLEE
+	RTS
