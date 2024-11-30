@@ -113,6 +113,8 @@ CC3ROMRAM
 	JMP $ED3D
 STACFROMRAM
 
+
+;MEMORIA EXPANSIVA
 TABMEMBANKS = $600
 BANKOS
     .BY $00
@@ -483,4 +485,52 @@ C2
 	LDY RY
 	STA (PCRSR),Y
 FINRUTLEE
+	RTS
+;************************************************
+;VALORES PRINCIPALES QUE REGULA LOS BAUDIOS
+;CODIGO DONADO POR WILLYSOFT
+;************************************************
+B00600 	= $05CC		;TIMER  600 BPS
+B00800 	= $0458  	;TIMER  800 BPS
+B00990 	= $0380  	;TIMER  991 BPS
+B01150 	= $0303  	;TIMER 1150 BPS
+B01400	= $0278		;TIMER 1400 BPS
+;************************************************
+;************************************************
+;FUNCION PARA REGULAR LA VELOCIDAD AL GRABAR
+;************************************************
+;
+BAUD.600
+	LDA # <B00600
+	JSR BAUD.M1
+	LDA # >B00600
+	JMP BAUD.M2
+BAUD.800
+	LDA # <B00800
+	JSR BAUD.M1
+	LDA # >B00800
+	JMP BAUD.M2
+BAUD.990
+	LDA # <B00990
+	JSR BAUD.M1
+	LDA # >B00990
+	JMP BAUD.M2
+BAUD.1150
+	LDA # <B01150
+	JSR BAUD.M1
+	LDA # >B01150
+	JMP BAUD.M2
+BAUD.1400
+	LDA # <B01400
+	JSR BAUD.M1
+	LDA # >B01400
+BAUD.M2
+	STA $EBA8
+	STA $FD46
+	STA $FCE1
+	RTS
+BAUD.M1
+	STA $EBA3
+	STA $FD41
+	STA $FCDC
 	RTS

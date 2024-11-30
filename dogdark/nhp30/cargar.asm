@@ -1,3 +1,75 @@
+LENGHT 	= $4000
+BAFER	= $4000
+ALL
+	.BYTE 'D:*.*',$9B
+FUENTE
+	.BYTE '                    '
+BYTES
+    .BY $00,$00,$00
+BLOQUES
+    .BY $00,$00
+BYTESBLOQUES
+	.BY $FB
+;************************************************
+; DEFINICION DEL DISPLAY
+; PARA DIRECTORIO
+;************************************************
+?DIR
+	.BYTE $70,$70,$70,$46
+	.WORD ???DIR
+	.BYTE $70,$70,$70,$02,$02,$02,$02,$02,$02,$02
+	.BYTE $02,$02,$41
+	.WORD ?DIR
+;************************************************
+;VALORES PARA PANTALLA DIRECTORIO
+;************************************************
+???DIR
+	.SB "     DIRECTORIO     "
+??DIR
+:10	.SB "                                        "
+;************************************************
+;GENERA UNA LIMPIEZA TOTAL DEL DISPLAY DEL
+;DIRECTORIO
+;************************************************
+CLS
+	LDX # <??DIR
+	LDY # >??DIR
+	STX PCRSR
+	STY PCRSR+1
+	LDY #$00
+	LDX #$00
+?CLS
+	LDA #$00
+	STA (PCRSR),Y
+	INY
+	BNE ??CLS
+	INX
+	INC PCRSR+1
+??CLS
+	CPY #104	;$68
+	BNE ?CLS
+	CPX #$01
+	BNE ?CLS
+	RTS
+;************************************************
+;FUNCION QUE ABRE PERIFERICOS
+;************************************************
+OPEN
+	LDX #$10
+	LDA #$03
+	STA $0342,X
+	LDA # <FUENTE
+	STA $0344,X
+	LDA # >FUENTE
+	STA $0345,X
+	LDA #$04
+	STA $034A,X
+	LDA #$80
+	STA $034B,X
+	JSR $E456
+	DEY
+	BNE DIR
+	RTS
 ;************************************************
 ;FUNCION QUE CIERRA PERIFERICOS
 ;************************************************
@@ -6,3 +78,205 @@ CLOSE
 	LDA #$0C
 	STA $0342,X
 	JMP $E456
+;************************************************
+;MUESTRA EL DIRECTORIO EN PANTALLA
+;************************************************
+DIR
+	JSR CLOSE
+	JSR CLS
+	LDX # <?DIR
+	LDY # >?DIR
+	STX $0230
+	STY $0231
+	LDX # <??DIR
+	LDY # >??DIR
+	STX PCRSR
+	STY PCRSR+1
+	
+;	
+	LDX #$10
+	LDA #$03
+	STA $0342,X
+	LDA # <ALL
+	STA $0344,X
+	LDA # >ALL
+	STA $0345,X
+	LDA #$06
+	STA $034A,X
+	LDA #$00
+	STA $034B,X
+	JSR $E456
+	LDA #$07
+	STA $0342,X
+	LDA #$00
+	STA $0348,X
+	STA $0349,X
+	STA RY
+	STA RY+1
+LEDIR
+	JSR $E456
+	BMI ?EXIT
+	CMP #155
+	BEQ EXIT
+	JSR ASCINT
+	LDY RY
+	STA (PCRSR),Y
+	INC RY
+	BNE F0
+	INC PCRSR+1
+	INC RY+1
+F0
+	LDY RY+1
+	CPY #$01
+	BNE F1
+	LDY RY
+	CPY #104	;$68
+	BCC F1
+	JSR PAUSE
+	INC RY
+F1
+	JMP LEDIR
+EXIT
+	INC RY
+	INC RY
+;	INC RY
+	JMP LEDIR
+?EXIT
+	JSR CLOSE
+	JSR PAUSE
+	JSR CLS
+	PLA
+	PLA
+	JMP STARTPR
+PAUSE
+	LDA 53279
+	CMP #$06
+	BNE PAUSE
+	JSR CLS
+	LDA #$00
+	STA RY
+	STA RY+1
+	LDA # <??DIR
+	STA PCRSR
+	LDA # >??DIR
+	STA PCRSR+1
+	LDX #$10
+	RTS
+;************************************************
+;FUNCION QUE PERMITE PODER REALIZAR CAMBIOS
+;DE BANCOS DE MEMORIA EN UNA CARGA
+;************************************************
+CAMBIOBANCO
+	LDX RY
+    CPX BANKOS
+	BEQ	FINCAMBIOBANCO
+    BCS ERRORBANQUEO
+FINCAMBIOBANCO	
+	LDA TABMEMBANKS,X
+    STA $D301
+	INX
+	STX RY
+	RTS
+;************************************************
+;EN CASO QUE SOBREPASE LA CANTIDAD DE BANCOS
+;ENCONTRADOS NOS REDIRECCIONA A MOSTRAR EL
+;DIRECTORIO EN PANTALLA
+;************************************************
+ERRORBANQUEO
+	JMP DIR
+;************************************************
+;FUNCION QUE NOS PERMITE PODER REALIZAR CARGA
+;DE DATOS EN MEMORIA
+;************************************************
+FGET
+	LDY #$00
+	STY LEN
+	STY LEN+1
+	STY LEN+2
+	INY
+	STY RY
+	JSR LIMPIOVAL
+LOPFGET
+	JSR CAMBIOBANCO	;REALIZO CAMBIO DE BANCO
+	JSR ESPORTB		;MUESTRO EL PORTB EN PANTALLA
+	LDX #$10
+	LDA #$07
+	STA $0342,X
+	LDA # <BAFER	;SE CARGA EN $4000
+	STA $0344,X
+	LDA # >BAFER
+	STA $0345,X
+	LDA # <LENGHT	;CANTIDAD DE BYTES QUE SE CARGAN
+	STA $0348,X
+	LDA # >LENGHT
+	STA $0349,X
+??FGET
+	JSR $E456
+;************************************************
+;REALIZO SUMA DE BYTES POR BANCO Y LO GUARDO EN
+;LA VARIABLE VOLATIL LEN
+;************************************************
+	CLC
+	LDA BYTES
+	ADC $0348,X
+	STA BYTES
+	STA LEN
+	LDA BYTES+1
+	ADC $0349,X
+	STA BYTES+1
+	STA LEN+1
+	LDA BYTES+2
+	ADC #$00
+	STA BYTES+2
+	STA LEN+2
+	LDA $0349,X
+	CMP # >LENGHT
+	BEQ LOPFGET
+	CPY #136	;$88
+	BEQ ?FGET
+	JSR CLOSE
+	JSR CLS
+	LDX #$00
+	TXS
+	JMP STARTPR
+?FGET
+	JSR ESBYTESLEIDOS
+	JSR PONBLOQUES
+    RTS
+PONBLOQUES
+	SEC
+	LDA LEN
+	SBC BYTESBLOQUES
+	STA LEN
+	LDA LEN+1
+	SBC #0
+	STA LEN+1
+	LDA LEN+2
+	SBC #0
+	STA LEN+2
+;SUMO BLOQUES
+	CLC
+	LDA BLOQUES
+	ADC #$01
+	STA BLOQUES
+	LDA BLOQUES+1
+	ADC #$00
+	STA BLOQUES+1
+
+	LDA LEN+2
+	CMP #$00
+	BNE PONBLOQUES
+	LDA LEN+1
+	CMP #$00
+	BNE PONBLOQUES
+
+	CLC
+	LDA BLOQUES
+	ADC #$01
+	STA BLOQUES
+	LDA BLOQUES+1
+	ADC #$00
+	STA BLOQUES+1
+
+	JSR ESBLOQUESLIEDOS
+	RTS
