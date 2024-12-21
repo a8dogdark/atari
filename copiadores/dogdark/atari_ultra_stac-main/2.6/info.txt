@@ -1,0 +1,3 @@
+#ultimo cambio
+24-04-2020
+se agrega funcionalidad de restear el programa con la tecla select

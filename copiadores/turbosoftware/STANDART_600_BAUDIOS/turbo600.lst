@@ -1,0 +1,2913 @@
+mads 2.1.7 build 21 (20 May 24)
+Source: tt.asm
+     1 = F2B0											PRINTBYTE = $F2B0
+     2 = F2F8											GETBYTE = $F2F8
+     3 = 000C											CCLOSE  = $C
+     4 = 0009											CPUTREC = $9
+     5 = 009B											EOL     = $9B
+     6 = 0342											ICCOM   = $0342
+     7 = 0344											ICBAL   = $344
+     8 = 0348											ICBLL   = $348
+     9 = 0344											ICBADR  = $0344
+    10 = 0348											ICBLEN  = $0348
+    11 = 034A											ICAUX1  = $034A
+    12 = 034B											ICAUX2  = $034B
+    13 = D301											PORTB   = $D301
+    14 = D40E											NMIEN   = $D40E
+    15 = E456											CIO    = $E456
+    16 = 0062											PALNTS = $62
+    17 = 021C											CDTMV3 = $021C
+    18 = D40B											VCOUNT = $D40B
+    19 = 00CB											PT.1 =  $CB
+    20
+    21 												;MACROS
+    22 												;MACRO SIMPLE PRINT
+    23 												    .MACRO PRINT
+    24 												        .IF :0 < 1
+    25 												            .ERROR "MACRO PRINT, FALTA PARAMETRO"
+    26 												        .ELSE
+    27 												            ;LDX #<:1
+    28 												            ;LDY #>:1
+    29 												            ;JSR $C642
+    30 												            LDX #:1*16
+    31 												            LDA #$09
+    32 												            STA ICCOM,X
+    33 												            LDA # <:2
+    34 												            STA ICBADR,X
+    35 												            LDA # >:2
+    36 												            STA ICBADR+1,X
+    37 												            LDA #$FF
+    38 												            STA ICBLEN,X
+    39 												            LDA #$00
+    40 												            STA ICBLEN+1,X
+    41 												            JSR CIO
+    42 												        .ENDIF
+    43 												    .ENDM
+    44 												;MACRO POKE
+    45 												    .MACRO POKE
+    46 												        .IF :0 < 2
+    47 												            .ERROR "MACRO POKE, FALTA PARAMETRO"
+    48 												        .ELSE
+    49 												            LDA #:2
+    50 												            STA :1
+    51 												        .ENDIF
+    52 												    .ENDM
+    53 												;MACRO OPEN 
+    54 												    .MACRO OPEN
+    55 												        .IF :0<4
+    56 												            .ERROR "ERROR MACRO, FALTA PARAMETRO"
+    57 												        .ELSE
+    58 												            LDX #:1*16
+    59 												            .IF :2 <7
+    60 												                LDA #$03
+    61 												            .ELSE
+    62 												                LDA #$07
+    63 												            .ENDIF
+    64 												            STA ICCOM,X
+    65 												            LDA #:2
+    66 												            STA ICAUX1,X
+    67 												            LDA #:3
+    68 												            STA ICAUX2,X
+    69 												            LDA #<:4
+    70 												            STA ICBADR,X
+    71 												            LDA #>:4
+    72 												            STA ICBADR+1,X
+    73 												            JSR CIO
+    74 												        .ENDIF
+    75 												    .ENDM
+    76 												;MACRO CLOSE
+    77 												    .MACRO CLOSE
+    78 												        .IF :0 <1
+    79 												            .ERROR "ERROR MACRO, FALTAN PARAMETROS"
+    80 												        .ELSE
+    81 												            LDX #:1*16
+    82 												            LDA #CCLOSE
+    83 												            STA ICCOM,X
+    84 												            JSR CIO
+    85 												        .ENDIF
+    86 												    .ENDM
+    87 												;MACRO BGET
+    88 												    .MACRO BGET
+    89 												        .IF :0 <3
+    90 												            .ERROR "ERROR MACRO, FALTAN PARAMETROS"
+    91 												        .ELSE
+    92 												            LDX #:1*16
+    93 												            LDA #$07
+    94 												            STA ICCOM,X
+    95 												            LDA # <:2
+    96 												            STA ICBADR,X
+    97 												            LDA # >:2
+    98 												            STA ICBADR+1,X
+    99 												            LDA :3
+   100 												            STA ICBLEN,X
+   101 												            LDA :3+1
+   102 												            STA ICBLEN+1,X
+   103 												            JSR CIO
+   104 												        .ENDIF
+   105 												    .ENDM
+   106 												;MACRO DETENGO
+   107 												    .MACRO DETENGO
+   108 												        LDX #$40
+   109 												        STX 710
+   110 												        JMP *
+   111 												    .ENDM
+   112 												;FIN MACROS
+   113 = C000											ROM.INICIO = $C000
+   114 												;
+   115 												;
+   116 = 0600											ROMRAM.INICIO = $0600
+   117 												;
+   118 												;
+   119 												    ORG $0600
+   120 												ROMINICIO
+   121 FFFF> 0600-0639> AD 0E D4									    LDA NMIEN
+   122 0603 48											    PHA 
+   123 0604 A9 FF											    LDA #$FF
+   124 0606 8D 01 D3										    STA PORTB
+   125 0609 78											    SEI 
+   126 060A A9 00											    LDA # <ROM.INICIO
+   127 060C 85 CB											    STA PT.1
+   128 060E A9 C0											    LDA # >ROM.INICIO
+   129 0610 85 CC											    STA PT.1+1
+   130 0612 A0 00											    LDY #$00
+   131 0614 8C 0E D4										    STY NMIEN
+   132 0617												ROMRAM.LOOP
+   133 0617 B1 CB											    LDA (PT.1),Y
+   134 0619 CE 01 D3										    DEC PORTB
+   135 061C 91 CB											    STA (PT.1),Y
+   136 061E EE 01 D3										    INC PORTB
+   137 0621 C8											    INY 
+   138 0622 D0 F3											    BNE ROMRAM.LOOP
+   139 0624 E6 CC											    INC PT.1+1
+   140 0626 F0 0C											    BEQ ROMRAM.FIN
+   141 0628 A5 CC											    LDA PT.1+1
+   142 062A C9 D0											    CMP #$D0
+   143 062C D0 E9											    BNE ROMRAM.LOOP
+   144 062E A9 D8											    LDA #$D8
+   145 0630 85 CC											    STA PT.1+1
+   146 0632 D0 E3											    BNE ROMRAM.LOOP
+   147 0634												ROMRAM.FIN
+   148 0634 68											    PLA 
+   149 0635 8D 0E D4										    STA NMIEN
+   150 0638 58											    CLI 
+   151 0639 60											    RTS 
+   152 02E2-02E3> 00 06										    INI ROMINICIO
+   153 												;********************************
+   154 												; PAL
+   155 												;********************************
+   156 												; INICIALIZAMOS LAS VARIABLES
+   157 = 0600											INICIO.PAL = $0600
+   158 												;
+   159 												;
+   160 063A												    ORG  INICIO.PAL
+   161 0600												DETECTA.PAL
+   162 0600-0623> AD 0B D4										    LDA VCOUNT
+   163 0603 C9 64											    CMP #100
+   164 0605 D0 F9											    BNE DETECTA.PAL ;BUSCA SCANLINE 100
+   165 0607 A9 02											    LDA #2
+   166 0609 8D 1C 02										    STA CDTMV3  ; 2 BARRIDOS DE PANTALLA
+   167 060C A9 00											    LDA #$00
+   168 060E 8D 1D 02										    STA CDTMV3+1 ;SOLO 2 BARRIDOS
+   169 0611												DETECTA.PAL.LOOP
+   170 0611 AD 0B D4										    LDA VCOUNT
+   171 0614 C9 87											    CMP #135
+   172 0616 F0 07											    BEQ DETECTA.PAL.SI.PAL
+   173 0618 AD 1C 02										    LDA CDTMV3  ; 2 BARRIDOS?
+   174 061B D0 F4											    BNE DETECTA.PAL.LOOP ; NO!
+   175 061D F0 02											    BEQ DETECTA.PAL.NTSC ;ES NTSC!
+   176 061F												DETECTA.PAL.SI.PAL
+   177 061F A9 01											    LDA #$01
+   178 0621												DETECTA.PAL.NTSC
+   179 0621 85 62											    STA PALNTS
+   180 0623 60											    RTS
+   181 = 00B3											TURBO = $B3
+   182 0624												    ORG  $D301
+   183 D301-D301> FE										    .BY $FE
+   184 D302												    ORG  $BC20
+   185 BC20-BC22> 01										    .BY 1
+   186 BC21 00 BB											    .WO NEWDL
+   187 BC23												VOLVERE
+   188 BC23												    ORG  $BB00
+   189 BB00												NEWDL
+   190 BB00-BB3E> 70 70 42										    .BY 112,112,66
+   191 BB03 09 BB											    .WO LINE0
+   192 BB05 30 01											    .BY 48,1
+   193 BB07 23 BC											    .WO VOLVERE
+   194 BB09												LINE0
+   195 BB09 80 80 A3 AF AE 80									    .SB +128,"  CON "
+   196 BB0F 33											    .SB "S"
+   197 BB10 F5 E2 F2 F5 F4 E9 EE E1 80 80 80 80 A3 8D						    .SB +128,"ubrutina    C-"
+   198 BB1E												C?
+   199 BB1E 90 90 90 80 B3 A9 AE 80									    .SB +128,"000 SIN "
+   200 BB26 32											    .SB "R"
+   201 BB27 E5 F3 E5 F4 80 80									    .SB +128,"eset  "
+   202 BB2D												MENSAJE.TV
+   203 BB2D 80 80 80 80										    .SB +128,"    "
+   204 BB31 A3 AF AE										CON     .SB +128,"CON"
+   205 BB34 B3 A9 AE										SIN     .SB +128,"SIN"
+   206 BB37 30 30 30 9B										SECTOR  .BY "000",$9B
+   207 BB3B 32 2E 33 9B										FACTOR  .BY "2.3",$9B
+   208 BB3F												    ORG  $8000
+   209 8000												MENSAJE.NTSC
+   210 8000-87B8> AE B4 B3 A3									    .SB +128,"NTSC"
+   211 8004												MENSAJE.PAL
+   212 8004 B0 A1 AC 80										    .SB +128,"PAL "
+   213 8008 00											EORBYTE     .BY $00
+   214 8009 00											BYTEMULA    .BY $00
+   215 800A 00 40											CANTR       .WO $4000
+   216 800C 00 40											CANTW       .WO $4000
+   217 800E 00 40											LASTCANT    .WO $4000
+   218 = 000C											DESDE = $0C
+   219 = 000E											HASTA = $0E
+   220 = 00D4											FRO =   $D4
+   221 = 00CB											RAM =   $CB
+   222 = 00CD											ROM =   $CD
+   223 8010												FEOR 
+   224 8010 00											    .BY 0
+   225 8011												FEOF 
+   226 8011 00											    .BY 0
+   227 8012												BANCO 
+   228 8012 00											    .BY 0
+   229 8013												GUARDABANCO     
+   230 8013 00											    .BY 0
+   231 8014												SUB
+   232 8014 20 E7 DC										    JSR USERSUB+Z
+   233 8017												SINRES
+   234 8017 4C 92 03										    JMP $0392
+   235 801A												CONRES
+   236 801A 6C FC FF										    JMP ($FFFC)
+   237 = 9B04											SET =   PROGRAMA-RAMPROG
+   238 801D												ALL
+   239 801D 44 3A 2A 2E 2A										    .BY 'D:*.*'
+   240 8022												MENSAJE1
+   241 8022 20 20 45 4C 49 4A 41 20 46 49 4C 45 20 41 20 47 52 41 42 41 52 21 9B			    .BY '  ELIJA FILE A GRABAR!',EOL
+   242 8039												MENSAJE2
+   243 8039 7D 20 20 49 4E 47 52 45 53 45 20 44 49 53 43 4F 20 43 4F 4E 20 46 49 4C 45 20 41 20 +       .BY $7D,'  INGRESE DISCO CON FILE A GRABAR',EOL
+   244 805C												MENSAJE3
+   245 805C 7D 20 20 20 52 45 54 55 52 4E 20 50 41 52 41 20 43 4F 4D 45 4E 5A 41 52 20 47 52 41 +       .BY $7D,'   RETURN PARA COMENZAR GRABACION',EOL
+   246 807F												STRING
+   247 807F 44 31 3A										    .BYTE 'D1:'
+   248 8082												NOMBRE
+   249 8082 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 +       .BY '                                         '
+   250 80AB												PABONITO
+   251 80AB 10 10 10 00 00 22 2C 2F 31 35 25 33 00 21 00 27 32 21 22 21 32 00			    .SB "000  BLOQUES A GRABAR "
+   252 80C1												GRABAMULA
+   253 80C1 A2 08											    LDX #$08
+   254 80C3 A4 62											    LDY PALNTS
+   255 80C5 F0 01											    BEQ GRABAMULA.1
+   256 80C7 CA											    DEX 
+   257 80C8												GRABAMULA.1
+   258 80C8 20 00 81										    JSR GRABAMULA.WAIT
+   259 80CB A9 8B											    LDA #139
+   260 80CD 8D 0F D2										    STA $D20F
+   261 80D0 A2 08											    LDX #8
+   262 80D2 A4 62											    LDY PALNTS
+   263 80D4 F0 01											    BEQ GRABAMULA.2
+   264 80D6 CA											    DEX 
+   265 80D7												GRABAMULA.2
+   266 80D7 20 00 81										    JSR GRABAMULA.WAIT
+   267 80DA A9 0B											    LDA #11
+   268 80DC 8D 0F D2										    STA $D20F
+   269 80DF A2 10											    LDX #16
+   270 80E1 A4 62											    LDY PALNTS
+   271 80E3 F0 02											    BEQ GRABAMULA.3
+   272 80E5 A2 0D											    LDX #13
+   273 80E7												GRABAMULA.3
+   274 80E7 20 00 81										    JSR GRABAMULA.WAIT
+   275 80EA A9 8B											    LDA #139
+   276 80EC 8D 0F D2										    STA $D20F
+   277 80EF A2 2F											    LDX #47
+   278 80F1 A4 62											    LDY PALNTS
+   279 80F3 F0 02											    BEQ GRABAMULA.4
+   280 80F5 A2 27											    LDX #39
+   281 80F7												GRABAMULA.4
+   282 80F7 20 00 81										    JSR GRABAMULA.WAIT
+   283 80FA A9 0B											    LDA #11
+   284 80FC 8D 0F D2										    STA $D20F
+   285 80FF 60											    RTS 
+   286 8100												LOOPMULA
+   287 8100												MULA0
+   288 8100												GRABAMULA.WAIT
+   289 8100 20 07 81										    JSR LINEA10?
+   290 8103 CA											    DEX 
+   291 8104 D0 FA											    BNE GRABAMULA.WAIT
+   292 8106 60											    RTS 
+   293 												;
+   294 												; ESPERA X BARRIDOS
+   295 												;
+   296 												;
+   297 8107												LINEA10?
+   298 8107 AD 0B D4										    LDA $D40B
+   299 810A C9 0A											    CMP #10
+   300 810C D0 F9											    BNE LINEA10?
+   301 810E 8D 0A D4										    STA $D40A
+   302 8111 8D 0A D4										    STA $D40A
+   303 8114 60											    RTS 
+   304 8115												EOREO
+   305 8115 A0 00											    LDY #$00
+   306 8117 B1 0C											    LDA (DESDE),Y
+   307 8119 4D 08 80										    EOR EORBYTE
+   308 811C 91 0C											    STA (DESDE),Y
+   309 811E E6 0C											    INC DESDE
+   310 8120 D0 02											    BNE NOINCDESDE1
+   311 8122 E6 0D											    INC DESDE+1
+   312 8124												NOINCDESDE1
+   313 8124 A5 0D											    LDA DESDE+1
+   314 8126 C5 0F											    CMP HASTA+1
+   315 8128 D0 EB											    BNE EOREO
+   316 812A A5 0C											    LDA DESDE
+   317 812C C5 0E											    CMP HASTA
+   318 812E D0 E5											    BNE EOREO
+   319 8130 60											    RTS 
+   320 8131												BANQUEO
+   321 8131 09 08											    ORA #$08
+   322 8133 18											    CLC 
+   323 8134 2A											    ROL
+   324 8135 2A											    ROL
+   325 8136 48											    PHA 
+   326 8137 A9 C3											    LDA #$C3
+   327 8139 2D 01 D3										    AND $D301
+   328 813C 8D 01 D3										    STA $D301
+   329 813F 68											    PLA 
+   330 8140 0D 01 D3										    ORA $D301
+   331 8143 29 FE											    AND #$FE
+   332 8145 8D 01 D3										    STA $D301
+   333 8148 60											    RTS 
+   334 8149												SUBCLOSE
+   335 8149												    CLOSE  1
+Macro: CLOSE [Source: tt.asm]
+     4 8149 A2 10											            LDX #1*16
+     5 814B A9 0C											            LDA #CCLOSE
+     6 814D 9D 42 03										            STA ICCOM,X
+     7 8150 20 56 E4										            JSR CIO
+Source: tt.asm
+   336 8153 60											    RTS 
+   337 8154												SUBOPEN
+   338 8154												    OPEN  1,4,128,STRING
+Macro: OPEN [Source: tt.asm]
+     4 8154 A2 10											            LDX #1*16
+     6 8156 A9 03											                LDA #$03
+    10 8158 9D 42 03										            STA ICCOM,X
+    11 815B A9 04											            LDA #4
+    12 815D 9D 4A 03										            STA ICAUX1,X
+    13 8160 A9 80											            LDA #128
+    14 8162 9D 4B 03										            STA ICAUX2,X
+    15 8165 A9 7F											            LDA #<STRING
+    16 8167 9D 44 03										            STA ICBADR,X
+    17 816A A9 80											            LDA #>STRING
+    18 816C 9D 45 03										            STA ICBADR+1,X
+    19 816F 20 56 E4										            JSR CIO
+Source: tt.asm
+   339 8172 10 09											    BPL OPENOK
+   340 8174 20 49 81										    JSR SUBCLOSE
+   341 8177 20 74 82										    JSR SUBDIRECTORIO
+   342 817A 4C 54 81										    JMP SUBOPEN
+   343 817D												OPENOK
+   344 817D 60											    RTS 
+   345 817E												SUBBGET
+   346 817E												    BGET  1,$4000,CANTR
+Macro: BGET [Source: tt.asm]
+     4 817E A2 10											            LDX #1*16
+     5 8180 A9 07											            LDA #$07
+     6 8182 9D 42 03										            STA ICCOM,X
+     7 8185 A9 00											            LDA # <$4000
+     8 8187 9D 44 03										            STA ICBADR,X
+     9 818A A9 40											            LDA # >$4000
+    10 818C 9D 45 03										            STA ICBADR+1,X
+    11 818F AD 0A 80										            LDA CANTR
+    12 8192 9D 48 03										            STA ICBLEN,X
+    13 8195 AD 0B 80										            LDA CANTR+1
+    14 8198 9D 49 03										            STA ICBLEN+1,X
+    15 819B 20 56 E4										            JSR CIO
+Source: tt.asm
+   347 819E 60											    RTS 
+   348 819F												SUBREAD
+   349 819F 20 54 81										    JSR SUBOPEN
+   350 81A2 A9 04											    LDA #$04
+   351 81A4 8D 12 80										    STA BANCO
+   352 81A7												LOOPBANCOS
+   353 81A7 CE 12 80										    DEC BANCO
+   354 81AA AD 12 80										    LDA BANCO
+   355 81AD 20 31 81										    JSR BANQUEO
+   356 81B0 20 7E 81										    JSR SUBBGET
+   357 81B3 AD 58 03										    LDA 856
+   358 81B6 CD 0A 80										    CMP CANTR
+   359 81B9 D0 08											    BNE FINCARGA
+   360 81BB AD 59 03										    LDA 857
+   361 81BE CD 0B 80										    CMP CANTR+1
+   362 81C1 F0 E4											    BEQ LOOPBANCOS
+   363 81C3												FINCARGA
+   364 81C3 AD 12 80										    LDA BANCO
+   365 81C6 8D 13 80										    STA GUARDABANCO
+   366 81C9 AD 58 03										    LDA 856
+   367 81CC 8D 0E 80										    STA LASTCANT
+   368 81CF 85 D4											    STA FRO
+   369 81D1 AD 59 03										    LDA 857
+   370 81D4 8D 0F 80										    STA LASTCANT+1
+   371 81D7 85 D5											    STA FRO+1
+   372 81D9 A2 02											    LDX #$02
+   373 81DB A9 90											    LDA #$90      ;'0-32
+   374 81DD												VUELVEA0
+   375 81DD 9D AB 80										    STA PABONITO,X
+   376 81E0 AC 10 80										    LDY FEOR
+   377 81E3 F0 02											    BEQ NOEORFF
+   378 81E5 49 FF											    EOR #$FF
+   379 81E7												NOEORFF
+   380 81E7 9D 31 32										    STA TENMEBLK,X
+   381 81EA CA											    DEX 
+   382 81EB 10 F0											    BPL VUELVEA0
+   383 81ED A2 03											    LDX #$03
+   384 81EF												CALCULOASC
+   385 81EF EC 13 80										    CPX GUARDABANCO
+   386 81F2 F0 12											    BEQ NOFINCALCULO
+   387 81F4 18											    CLC 
+   388 81F5 A5 D4											    LDA FRO
+   389 81F7 6D 0A 80										    ADC CANTR
+   390 81FA 85 D4											    STA FRO
+   391 81FC A5 D5											    LDA FRO+1
+   392 81FE 6D 0B 80										    ADC CANTR+1
+   393 8201 85 D5											    STA FRO+1
+   394 8203 CA											    DEX 
+   395 8204 10 E9											    BPL CALCULOASC
+   396 8206												NOFINCALCULO
+   397 8206 A0 01											    LDY #$01
+   398 8208 A5 D4											    LDA FRO
+   399 820A 29 7F											    AND #$7F
+   400 820C F0 01											    BEQ FINCALCULO
+   401 820E C8											    INY 
+   402 820F												FINCALCULO
+   403 820F A2 06											    LDX #$06
+   404 8211												LOOPFINCALCULO
+   405 8211 46 D5											    LSR FRO+1
+   406 8213 66 D4											    ROR FRO
+   407 8215 CA											    DEX 
+   408 8216 10 F9											    BPL LOOPFINCALCULO
+   409 8218 18											    CLC 
+   410 8219 98											    TYA 
+   411 821A 65 D4											    ADC FRO
+   412 821C 85 D4											    STA FRO
+   413 821E A5 D5											    LDA FRO+1
+   414 8220 69 00											    ADC #$00
+   415 8222 85 D5											    STA FRO+1
+   416 8224 20 AA D9										    JSR $D9AA
+   417 8227 20 E6 D8										    JSR $D8E6
+   418 822A A0 00											    LDY #$00
+   419 822C												LOOPPOSITIVO
+   420 822C B1 F3											    LDA ($F3),Y
+   421 822E 30 03											    BMI ESNEGATIVO
+   422 8230 C8											    INY 
+   423 8231 10 F9											    BPL LOOPPOSITIVO
+   424 8233												ESNEGATIVO
+   425 8233 38											    SEC 
+   426 8234 E9 20											    SBC #32
+   427 8236 8D AD 80										    STA PABONITO+2
+   428 8239 AE 10 80										    LDX FEOR
+   429 823C F0 02											    BEQ NOEORFF1
+   430 823E 49 FF											    EOR #$FF
+   431 8240												NOEORFF1
+   432 8240 8D 33 32										    STA TENMEBLK+2
+   433 8243 88											    DEY 
+   434 8244 30 2B											    BMI NOQUEDANMAS
+   435 8246 B1 F3											    LDA ($F3),Y
+   436 8248 09 80											    ORA #$80
+   437 824A 38											    SEC 
+   438 824B E9 20											    SBC #32
+   439 824D 8D AC 80										    STA PABONITO+1
+   440 8250 AE 10 80										    LDX FEOR
+   441 8253 F0 02											    BEQ NOEORFF2
+   442 8255 49 FF											    EOR #$FF
+   443 8257												NOEORFF2
+   444 8257 8D 32 32										    STA TENMEBLK+1
+   445 825A 88											    DEY 
+   446 825B 30 14											    BMI NOQUEDANMAS
+   447 825D B1 F3											    LDA ($F3),Y
+   448 825F 49 80											    EOR #$80
+   449 8261 38											    SEC 
+   450 8262 E9 20											    SBC #32
+   451 8264 8D AB 80										    STA PABONITO
+   452 8267 AE 10 80										    LDX FEOR
+   453 826A F0 02											    BEQ NOEORFF3
+   454 826C 49 FF											    EOR #$FF
+   455 826E												NOEORFF3
+   456 826E 8D 31 32										    STA TENMEBLK
+   457 8271												NOQUEDANMAS
+   458 8271 4C 49 81										    JMP SUBCLOSE
+   459 8274												SUBDIRECTORIO
+   460 8274 A9 7D											    LDA #$7D       ;'}
+   461 8276 20 B0 F2										    JSR PRINTBYTE
+   462 8279												    OPEN  1,6,0,ALL
+Macro: OPEN [Source: tt.asm]
+     4 8279 A2 10											            LDX #1*16
+     6 827B A9 03											                LDA #$03
+    10 827D 9D 42 03										            STA ICCOM,X
+    11 8280 A9 06											            LDA #6
+    12 8282 9D 4A 03										            STA ICAUX1,X
+    13 8285 A9 00											            LDA #0
+    14 8287 9D 4B 03										            STA ICAUX2,X
+    15 828A A9 1D											            LDA #<ALL
+    16 828C 9D 44 03										            STA ICBADR,X
+    17 828F A9 80											            LDA #>ALL
+    18 8291 9D 45 03										            STA ICBADR+1,X
+    19 8294 20 56 E4										            JSR CIO
+Source: tt.asm
+   463 8297												DIRECTORIO
+   464 8297 A2 10											    LDX #$10
+   465 8299 A9 05											    LDA #$05
+   466 829B 9D 42 03										    STA ICCOM,X
+   467 829E A9 82											    LDA # <NOMBRE
+   468 82A0 9D 44 03										    STA ICBADR,X
+   469 82A3 A9 80											    LDA # >NOMBRE
+   470 82A5 9D 45 03										    STA ICBADR+1,X
+   471 82A8 A9 FF											    LDA #$FF
+   472 82AA 9D 48 03										    STA ICBLEN,X
+   473 82AD A9 00											    LDA #$00
+   474 82AF 9D 49 03										    STA ICBLEN+1,X
+   475 82B2 20 56 E4										    JSR CIO
+   476 82B5 30 21											    BMI FINDIRECTORIO
+   477 82B7												    PRINT  0,NOMBRE
+Macro: PRINT [Source: tt.asm]
+     7 82B7 A2 00											            LDX #0*16
+     8 82B9 A9 09											            LDA #$09
+     9 82BB 9D 42 03										            STA ICCOM,X
+    10 82BE A9 82											            LDA # <NOMBRE
+    11 82C0 9D 44 03										            STA ICBADR,X
+    12 82C3 A9 80											            LDA # >NOMBRE
+    13 82C5 9D 45 03										            STA ICBADR+1,X
+    14 82C8 A9 FF											            LDA #$FF
+    15 82CA 9D 48 03										            STA ICBLEN,X
+    16 82CD A9 00											            LDA #$00
+    17 82CF 9D 49 03										            STA ICBLEN+1,X
+    18 82D2 20 56 E4										            JSR CIO
+Source: tt.asm
+   478 82D5 4C 97 82										    JMP DIRECTORIO
+   479 82D8												FINDIRECTORIO
+   480 82D8 20 49 81										    JSR SUBCLOSE
+   481 82DB A9 9B											    LDA #$9B
+   482 82DD 20 B0 F2										    JSR PRINTBYTE
+   483 82E0 A9 9B											    LDA #$9B
+   484 82E2 20 B0 F2										    JSR PRINTBYTE
+   485 82E5												    PRINT  0,MENSAJE1
+Macro: PRINT [Source: tt.asm]
+     7 82E5 A2 00											            LDX #0*16
+     8 82E7 A9 09											            LDA #$09
+     9 82E9 9D 42 03										            STA ICCOM,X
+    10 82EC A9 22											            LDA # <MENSAJE1
+    11 82EE 9D 44 03										            STA ICBADR,X
+    12 82F1 A9 80											            LDA # >MENSAJE1
+    13 82F3 9D 45 03										            STA ICBADR+1,X
+    14 82F6 A9 FF											            LDA #$FF
+    15 82F8 9D 48 03										            STA ICBLEN,X
+    16 82FB A9 00											            LDA #$00
+    17 82FD 9D 49 03										            STA ICBLEN+1,X
+    18 8300 20 56 E4										            JSR CIO
+Source: tt.asm
+   486 8303 A9 FF											    LDA #$FF
+   487 8305 20 31 81										    JSR BANQUEO
+   488 8308 A2 13											    LDX #19
+   489 830A A9 00											    LDA #$00
+   490 830C												SINNOMBRE
+   491 830C 9D 82 80										    STA NOMBRE,X
+   492 830F CA											    DEX 
+   493 8310 10 FA											    BPL SINNOMBRE
+   494 8312												TOMEFILE
+   495 8312 A5 58											    LDA $58
+   496 8314 85 00											    STA $00
+   497 8316 A5 59											    LDA $59
+   498 8318 85 01											    STA $01
+   499 831A												INVIERTA
+   500 831A 20 36 84										    JSR INVERSO
+   501 831D												QUEAPRETO?
+   502 831D A9 FF											    LDA #$FF
+   503 831F 8D FC 02										    STA 764
+   504 8322												WTECLA
+   505 8322 AD FC 02										    LDA 764
+   506 8325 C9 FF											    CMP #$FF
+   507 8327 F0 F9											    BEQ WTECLA
+   508 8329 C9 1C											    CMP #28
+   509 832B D0 01											    BNE NOOTRO
+   510 832D 60											    RTS 
+   511 832E												NOOTRO
+   512 832E C9 3E											    CMP #62
+   513 8330 D0 40											    BNE NOCSUB
+   514 8332 A2 00											    LDX #$00
+   515 8334 A0 02											    LDY #$02
+   516 8336 B9 09 BB										    LDA LINE0,Y
+   517 8339 C9 A3											    CMP #$A3   ;'C-32
+   518 833B F0 1B											    BEQ PONSINSUB
+   519 833D												PONCONSUB
+   520 833D BD 31 BB										    LDA CON,X
+   521 8340 99 09 BB										    STA LINE0,Y
+   522 8343 BD 14 80										    LDA SUB,X
+   523 8346 2C 10 80										    BIT FEOR
+   524 8349 F0 02											    BEQ NOEOR29A
+   525 834B 49 29											    EOR #$29
+   526 834D												NOEOR29A
+   527 834D 9D D9 44										    STA CONSUBRUTINA,X
+   528 8350 C8											    INY 
+   529 8351 E8											    INX 
+   530 8352 E0 03											    CPX #$03
+   531 8354 D0 E7											    BNE PONCONSUB
+   532 8356 F0 C5											    BEQ QUEAPRETO?
+   533 8358												PONSINSUB
+   534 8358 BD 34 BB										    LDA SIN,X
+   535 835B 99 09 BB										    STA LINE0,Y
+   536 835E A9 EA											    LDA #$EA
+   537 8360 2C 10 80										    BIT FEOR
+   538 8363 F0 02											    BEQ NOEOR29B
+   539 8365 49 29											    EOR #$29
+   540 8367												NOEOR29B
+   541 8367 9D D9 44										    STA CONSUBRUTINA,X
+   542 836A C8											    INY 
+   543 836B E8											    INX 
+   544 836C E0 03											    CPX #$03
+   545 836E D0 E8											    BNE PONSINSUB
+   546 8370 F0 AB											    BEQ QUEAPRETO?
+   547 8372												NOCSUB
+   548 8372 C9 28											    CMP #40
+   549 8374 D0 43											    BNE NOCRES
+   550 8376 A2 00											    LDX #$00
+   551 8378 A0 19											    LDY #25
+   552 837A B9 09 BB										    LDA LINE0,Y
+   553 837D C9 A3											    CMP #$A3   ;'C-32
+   554 837F F0 1C											    BEQ PONSINRES
+   555 8381												PONCONRES
+   556 8381 BD 31 BB										    LDA CON,X
+   557 8384 99 09 BB										    STA LINE0,Y
+   558 8387 BD 1A 80										    LDA CONRES,X
+   559 838A 2C 10 80										    BIT FEOR
+   560 838D F0 02											    BEQ NOEOR29C
+   561 838F 49 29											    EOR #$29
+   562 8391												NOEOR29C
+   563 8391 9D 8B 45										    STA SINRESET,X
+   564 8394 C8											    INY 
+   565 8395 E8											    INX 
+   566 8396 E0 03											    CPX #$03
+   567 8398 D0 E7											    BNE PONCONRES
+   568 839A 4C 1D 83										    JMP QUEAPRETO?
+   569 839D												PONSINRES
+   570 839D BD 34 BB										    LDA SIN,X
+   571 83A0 99 09 BB										    STA LINE0,Y
+   572 83A3 BD 17 80										    LDA SINRES,X
+   573 83A6 2C 10 80										    BIT FEOR
+   574 83A9 F0 02											    BEQ NOEOR29D
+   575 83AB 49 29											    EOR #$29
+   576 83AD												NOEOR29D
+   577 83AD 9D 8B 45										    STA SINRESET,X
+   578 83B0 C8											    INY 
+   579 83B1 E8											    INX 
+   580 83B2 E0 03											    CPX #$03
+   581 83B4 D0 E7											    BNE PONSINRES
+   582 83B6 4C 1D 83										    JMP QUEAPRETO?
+   583 83B9												NOCRES
+   584 83B9 C9 0F											    CMP #15
+   585 83BB D0 1C											    BNE NOUPALE
+   586 83BD 20 36 84										    JSR INVERSO
+   587 83C0 18											    CLC 
+   588 83C1 A5 00											    LDA $00
+   589 83C3 69 28											    ADC #40
+   590 83C5 85 00											    STA $00
+   591 83C7 A5 01											    LDA $01
+   592 83C9 69 00											    ADC #$00
+   593 83CB 85 01											    STA $01
+   594 83CD A0 03											    LDY #$03
+   595 83CF B1 00											    LDA ($00),Y
+   596 83D1 F0 03											    BEQ NOTOMEFIL
+   597 83D3 4C 12 83										    JMP TOMEFILE
+   598 83D6												NOTOMEFIL
+   599 83D6 4C 1A 83										    JMP INVIERTA
+   600 83D9												NOUPALE
+   601 83D9 C9 0E											    CMP #14
+   602 83DB D0 22											    BNE NOBAJALE
+   603 83DD 20 36 84										    JSR INVERSO
+   604 83E0 A5 00											    LDA $00
+   605 83E2 C5 58											    CMP $58
+   606 83E4 D0 09											    BNE BAJE
+   607 83E6 A5 01											    LDA $01
+   608 83E8 C5 59											    CMP $59
+   609 83EA D0 03											    BNE BAJE
+   610 83EC 4C 12 83										    JMP TOMEFILE
+   611 83EF												BAJE
+   612 83EF 38											    SEC 
+   613 83F0 A5 00											    LDA $00
+   614 83F2 E9 28											    SBC #40
+   615 83F4 85 00											    STA $00
+   616 83F6 A5 01											    LDA $01
+   617 83F8 E9 00											    SBC #$00
+   618 83FA 85 01											    STA $01
+   619 83FC 4C 1A 83										    JMP INVIERTA
+   620 83FF												NOBAJALE
+   621 83FF C9 0C											    CMP #12
+   622 8401 F0 03											    BEQ ELCOK
+   623 8403 4C 1D 83										    JMP QUEAPRETO?
+   624 8406												ELCOK
+   625 8406 20 36 84										    JSR INVERSO
+   626 8409 A0 04											    LDY #$04
+   627 840B A2 00											    LDX #$00
+   628 840D												ESTAFILE
+   629 840D B1 00											    LDA ($00),Y
+   630 840F F0 0C											    BEQ PUNTO
+   631 8411 18											    CLC 
+   632 8412 69 20											    ADC #$20
+   633 8414 9D 82 80										    STA NOMBRE,X
+   634 8417 E8											    INX 
+   635 8418 C8											    INY 
+   636 8419 C0 0C											    CPY #$0C
+   637 841B D0 F0											    BNE ESTAFILE
+   638 841D												PUNTO
+   639 841D A0 0C											    LDY #$0C
+   640 841F A9 2E											    LDA #$2E   ;'.
+   641 8421 9D 82 80										    STA NOMBRE,X
+   642 8424 E8											    INX 
+   643 8425												LOPUNTO
+   644 8425 B1 00											    LDA ($00),Y
+   645 8427 F0 0C											    BEQ FINPUNTO
+   646 8429 18											    CLC 
+   647 842A 69 20											    ADC #$20
+   648 842C 9D 82 80										    STA NOMBRE,X
+   649 842F E8											    INX 
+   650 8430 C8											    INY 
+   651 8431 C0 0F											    CPY #$0F
+   652 8433 D0 F0											    BNE LOPUNTO
+   653 8435												FINPUNTO
+   654 8435 60											    RTS 
+   655 8436												INVERSO
+   656 8436 A0 0F											    LDY #$0F
+   657 8438												LOINVIERTO
+   658 8438 B1 00											    LDA ($00),Y
+   659 843A 49 80											    EOR #$80
+   660 843C 91 00											    STA ($00),Y
+   661 843E 88											    DEY 
+   662 843F C0 03											    CPY #$03
+   663 8441 D0 F5											    BNE LOINVIERTO
+   664 8443 A0 02											    LDY #$02
+   665 8445 A9 90											    LDA #$90   ;'0-32
+   666 8447												BORREC
+   667 8447 99 1E BB										    STA C?,Y
+   668 844A 88											    DEY 
+   669 844B 10 FA											    BPL BORREC
+   670 844D A0 10											    LDY #$10
+   671 844F A2 00											    LDX #$00
+   672 8451												TOMENUM
+   673 8451 B1 00											    LDA ($00),Y
+   674 8453 18											    CLC 
+   675 8454 69 20											    ADC #$20
+   676 8456 9D 37 BB										    STA SECTOR,X
+   677 8459 C8											    INY 
+   678 845A E8											    INX 
+   679 845B E0 03											    CPX #$03
+   680 845D D0 F2											    BNE TOMENUM
+   681 845F A9 3B											    LDA # <FACTOR
+   682 8461 85 F3											    STA $F3
+   683 8463 A9 BB											    LDA # >FACTOR
+   684 8465 85 F4											    STA $F4
+   685 8467 A9 00											    LDA #$00
+   686 8469 85 F2											    STA $F2
+   687 846B 20 00 D8										    JSR $D800
+   688 846E 90 03											    BCC NOC1000
+   689 8470 4C FF 84										    JMP C1000?
+   690 8473												NOC1000
+   691 8473 20 B6 DD										    JSR $DDB6
+   692 8476 A9 37											    LDA # <SECTOR
+   693 8478 85 F3											    STA $F3
+   694 847A A9 BB											    LDA # >SECTOR
+   695 847C 85 F4											    STA $F4
+   696 847E A9 00											    LDA #$00
+   697 8480 85 F2											    STA $F2
+   698 8482 20 00 D8										    JSR $D800
+   699 8485 B0 78											    BCS C1000?
+   700 8487 20 DB DA										    JSR $DADB
+   701 848A B0 73											    BCS C1000?
+   702 848C 20 B6 DD										    JSR $DDB6
+   703 848F A9 57											    LDA #87
+   704 8491 85 D4											    STA $D4
+   705 8493 A9 00											    LDA #$00
+   706 8495 85 D5											    STA $D5
+   707 8497 20 AA D9										    JSR $D9AA
+   708 849A 20 66 DA										    JSR $DA66
+   709 849D 20 B6 DD										    JSR $DDB6
+   710 84A0 A9 1E											    LDA #30
+   711 84A2 85 D4											    STA $D4
+   712 84A4 A9 00											    LDA #$00
+   713 84A6 85 D5											    STA $D5
+   714 84A8 20 AA D9										    JSR $D9AA
+   715 84AB A0 05											    LDY #$05
+   716 84AD												FR1FR0
+   717 84AD B9 D4 00										    LDA $D4,Y
+   718 84B0 48											    PHA 
+   719 84B1 B9 E0 00										    LDA $E0,Y
+   720 84B4 99 D4 00										    STA $D4,Y
+   721 84B7 68											    PLA 
+   722 84B8 99 E0 00										    STA $E0,Y
+   723 84BB 88											    DEY 
+   724 84BC 10 EF											    BPL FR1FR0
+   725 84BE 20 28 DB										    JSR $DB28
+   726 84C1 B0 3C											    BCS C1000?
+   727 84C3 20 D2 D9										    JSR $D9D2
+   728 84C6 B0 37											    BCS C1000?
+   729 84C8 E6 D4											    INC $D4
+   730 84CA D0 02											    BNE NOINCD5
+   731 84CC E6 D5											    INC $D5
+   732 84CE												NOINCD5
+   733 84CE 20 AA D9										    JSR $D9AA
+   734 84D1 20 E6 D8										    JSR $D8E6
+   735 84D4 A0 00											    LDY #$00
+   736 84D6												ESASC?
+   737 84D6 B1 F3											    LDA ($F3),Y
+   738 84D8 30 03											    BMI FINASC
+   739 84DA C8											    INY 
+   740 84DB D0 F9											    BNE ESASC?
+   741 84DD												FINASC
+   742 84DD B1 F3											    LDA ($F3),Y
+   743 84DF 38											    SEC 
+   744 84E0 E9 20											    SBC #32
+   745 84E2 8D 20 BB										    STA C?+2
+   746 84E5 88											    DEY 
+   747 84E6 30 17											    BMI C1000?
+   748 84E8 B1 F3											    LDA ($F3),Y
+   749 84EA 38											    SEC 
+   750 84EB E9 20											    SBC #32
+   751 84ED 09 80											    ORA #$80
+   752 84EF 8D 1F BB										    STA C?+1
+   753 84F2 88											    DEY 
+   754 84F3 30 0A											    BMI C1000?
+   755 84F5 B1 F3											    LDA ($F3),Y
+   756 84F7 38											    SEC 
+   757 84F8 E9 20											    SBC #32
+   758 84FA 09 80											    ORA #$80
+   759 84FC 8D 1E BB										    STA C?
+   760 84FF												C1000?
+   761 84FF 60											    RTS 
+   762 8500												NO.IRG
+   763 8500 A2 04											    LDX #$04
+   764 8502 A9 EA											    LDA #$EA    ;NOP
+   765 8504												NO.IRG.LOOP
+   766 8504 9D C6 EB										    STA $EBC6,X
+   767 8507 CA											    DEX 
+   768 8508 10 FA											    BPL NO.IRG.LOOP
+   769 850A 60											    RTS 
+   770 850B												SI.IRG
+   771 850B A2 04											    LDX #$04
+   772 850D												SI.IRG.LOOP
+   773 850D BD 17 85										    LDA SI.IRG.TABLA,X
+   774 8510 9D C6 EB										    STA $EBC6,X
+   775 8513 CA											    DEX 
+   776 8514 10 F7											    BPL SI.IRG.LOOP
+   777 8516 60											    RTS 
+   778 8517												SI.IRG.TABLA
+   779 8517 AD 17 03 D0 FB										    .BY $AD,$17,$03,$D0,$FB
+   780 851C												IRG.100
+   781 851C A9 06											    LDA #$06
+   782 851E 8D 11 EE										    STA $EE11
+   783 8521 8D 15 EE										    STA $EE15
+   784 8524 A9 05											    LDA #$05
+   785 8526 8D 12 EE										    STA $EE12
+   786 8529 8D 16 EE										    STA $EE16
+   787 852C 60											    RTS 
+   788 852D												INICIOPROGRAMA
+   789 852D A9 00											    LDA #$00
+   790 852F 8D 10 80										    STA FEOR
+   791 8532 A9 FE											    LDA #$FE
+   792 8534 8D 01 D3										    STA $D301
+   793 8537 8D 44 02										    STA $0244
+   794 853A A9 70											    LDA #112
+   795 853C 85 10											    STA 16
+   796 853E 8D 0E D2										    STA 53774
+   797 8541 A9 03											    LDA #$03
+   798 8543 8D 8D FE										    STA $FE8D
+   799 8546 A9 02											    LDA #$02
+   800 8548 8D 8E FE										    STA $FE8E
+   801 854B A9 0C											    LDA #$0C
+   802 854D 8D 8F FE										    STA $FE8F
+   803 8550 A9 8A											    LDA #$8A
+   804 8552 8D 90 FE										    STA $FE90
+   805 												; QUEDAMOS CON IRG DE 14 SEGUNDOS
+   806 8555 20 1C 85										    JSR IRG.100
+   807 												;
+   808 												; IRG CORTO DE 100 MILISEGUNDOS
+   809 												;
+   810 8558 A9 60											    LDA #$60
+   811 855A 8D FC FD										    STA 65020   ; NO BEEP BEEP!
+   812 855D A9 34											    LDA #$34
+   813 855F 8D D7 FD										    STA $FDD7   ; NO APAQUE MOTOR!
+   814 8562 A9 00											    LDA #$00
+   815 8564 8D C6 02										    STA 710
+   816 8567 A9 01											    LDA #1
+   817 8569 8D F0 02										    STA 752
+   818 856C 20 00 06										    JSR DETECTA.PAL ;A DETECTAR PAL!
+   819 856F A2 03											    LDX #$03
+   820 8571												INICIOPROGRAMA.LOOP
+   821 8571 BD 00 80										    LDA MENSAJE.NTSC,X
+   822 8574 A4 62											    LDY PALNTS
+   823 8576 F0 03											    BEQ INICIOPROGRAMA.LOOP2
+   824 8578 BD 04 80										    LDA MENSAJE.PAL,X
+   825 857B												INICIOPROGRAMA.LOOP2
+   826 857B 9D 2D BB										    STA MENSAJE.TV,X
+   827 857E CA											    DEX 
+   828 857F 10 F0											    BPL INICIOPROGRAMA.LOOP
+   829 8581 20 00 85										    JSR NO.IRG
+   830 8584 A9 B3											    LDA #TURBO
+   831 8586 85 CF											    STA $CF
+   832 8588												CAMBIADISCO
+   833 8588												    PRINT  0,MENSAJE2
+Macro: PRINT [Source: tt.asm]
+     7 8588 A2 00											            LDX #0*16
+     8 858A A9 09											            LDA #$09
+     9 858C 9D 42 03										            STA ICCOM,X
+    10 858F A9 39											            LDA # <MENSAJE2
+    11 8591 9D 44 03										            STA ICBADR,X
+    12 8594 A9 80											            LDA # >MENSAJE2
+    13 8596 9D 45 03										            STA ICBADR+1,X
+    14 8599 A9 FF											            LDA #$FF
+    15 859B 9D 48 03										            STA ICBLEN,X
+    16 859E A9 00											            LDA #$00
+    17 85A0 9D 49 03										            STA ICBLEN+1,X
+    18 85A3 20 56 E4										            JSR CIO
+Source: tt.asm
+   834 85A6 A9 FF											    LDA #$FF
+   835 85A8 8D FC 02										    STA 764
+   836 85AB 20 F8 F2										    JSR GETBYTE
+   837 85AE 20 74 82										    JSR SUBDIRECTORIO
+   838 85B1 20 9F 81										    JSR SUBREAD
+   839 85B4												OTRACOPIA
+   840 85B4												    PRINT  0,MENSAJE3
+Macro: PRINT [Source: tt.asm]
+     7 85B4 A2 00											            LDX #0*16
+     8 85B6 A9 09											            LDA #$09
+     9 85B8 9D 42 03										            STA ICCOM,X
+    10 85BB A9 5C											            LDA # <MENSAJE3
+    11 85BD 9D 44 03										            STA ICBADR,X
+    12 85C0 A9 80											            LDA # >MENSAJE3
+    13 85C2 9D 45 03										            STA ICBADR+1,X
+    14 85C5 A9 FF											            LDA #$FF
+    15 85C7 9D 48 03										            STA ICBLEN,X
+    16 85CA A9 00											            LDA #$00
+    17 85CC 9D 49 03										            STA ICBLEN+1,X
+    18 85CF 20 56 E4										            JSR CIO
+Source: tt.asm
+   841 85D2 A0 82											    LDY #130
+   842 85D4 A2 00											    LDX #0
+   843 85D6												LOOPBONITO
+   844 85D6 BD AB 80										    LDA PABONITO,X
+   845 85D9 91 58											    STA ($58),Y
+   846 85DB C8											    INY 
+   847 85DC E8											    INX 
+   848 85DD E0 15											    CPX #21
+   849 85DF D0 F5											    BNE LOOPBONITO
+   850 85E1 A0 D8											    LDY #216
+   851 85E3 A2 00											    LDX #$00
+   852 85E5												BELLO
+   853 85E5 BD 82 80										    LDA NOMBRE,X
+   854 85E8 38											    SEC 
+   855 85E9 E9 20											    SBC #$20
+   856 85EB 30 06											    BMI FINBELISIMO
+   857 85ED 91 58											    STA ($58),Y
+   858 85EF C8											    INY 
+   859 85F0 E8											    INX 
+   860 85F1 D0 F2											    BNE BELLO
+   861 85F3												FINBELISIMO
+   862 85F3 A9 FF											    LDA #$FF
+   863 85F5 8D FC 02										    STA 764
+   864 85F8 20 F8 F2										    JSR GETBYTE
+   865 85FB C9 1B											    CMP #$1B   ;'?
+   866 85FD D0 03											    BNE NOCAMBIADISCO
+   867 85FF 4C 88 85										    JMP CAMBIADISCO
+   868 8602												NOCAMBIADISCO
+   869 8602 A9 7D											    LDA #$7D   ;'}
+   870 8604 20 B0 F2										    JSR $F2B0
+   871 8607 A0 D7											    LDY #215
+   872 8609 A2 00											    LDX #$00
+   873 860B												NUMEROSCREEN
+   874 860B BD AB 80										    LDA PABONITO,X
+   875 860E 91 58											    STA ($58),Y
+   876 8610 C8											    INY 
+   877 8611 E8											    INX 
+   878 8612 E0 03											    CPX #$03
+   879 8614 D0 F5											    BNE NUMEROSCREEN
+   880 8616 C8											    INY 
+   881 8617												NOMBRESCREEN
+   882 8617 BD 7F 80										    LDA STRING,X
+   883 861A 38											    SEC 
+   884 861B E9 20											    SBC #$20
+   885 861D 30 06											    BMI ENDNAME
+   886 861F 91 58											    STA ($58),Y
+   887 8621 E8											    INX 
+   888 8622 C8											    INY 
+   889 8623 D0 F2											    BNE NOMBRESCREEN
+   890 8625												ENDNAME
+   891 8625 A2 08											    LDX #$08
+   892 8627												NUEVEBLKS
+   893 8627 A0 D9											    LDY #217
+   894 8629												NUEVEBLKS1
+   895 8629 B1 58											    LDA ($58),Y
+   896 862B 18											    CLC 
+   897 862C 69 01											    ADC #$01
+   898 862E C9 9A											    CMP #$9A   ;'9-31
+   899 8630 F0 07											    BEQ NUEVE9
+   900 8632 91 58											    STA ($58),Y
+   901 8634 CA											    DEX 
+   902 8635 10 F0											    BPL NUEVEBLKS
+   903 8637 30 09											    BMI FINNUEVE
+   904 8639												NUEVE9
+   905 8639 A9 90											    LDA #$90    ;'0-32
+   906 863B 91 58											    STA ($58),Y
+   907 863D 88											    DEY 
+   908 863E C0 D6											    CPY #214
+   909 8640 D0 E7											    BNE NUEVEBLKS1
+   910 8642												FINNUEVE
+   911 8642 A9 FF											    LDA #$FF
+   912 8644 20 31 81										    JSR BANQUEO
+   913 8647 A9 D0											    LDA #$D0
+   914 8649 8D 71 FD										    STA $FD71
+   915 864C A9 F7											    LDA #$F7
+   916 864E 8D 72 FD										    STA $FD72   ; HABILITA LEAD
+   917 8651 20 84 A0										    JSR GRABABLKUNO
+   918 8654 A9 EA											    LDA #$EA
+   919 8656 8D 71 FD										    STA $FD71
+   920 8659 8D 72 FD										    STA $FD72   ; DESHABILITA LEAD
+   921 865C A9 2E											    LDA #$00-210
+   922 865E A6 62											    LDX PALNTS
+   923 8660 F0 02											    BEQ BLKUNO.NTSC
+   924 8662 A9 51											    LDA #$00-175
+   925 8664												BLKUNO.NTSC
+   926 8664 85 14											    STA 20
+   927 8666												BLKUNO.LOOP
+   928 8666 A5 14											    LDA 20
+   929 8668 D0 FC											    BNE BLKUNO.LOOP
+   930 866A A9 00											    LDA #$00
+   931 866C 85 14											    STA 20
+   932 866E 8D 80 04										    STA $0480
+   933 8671 8D 81 04										    STA $0481
+   934 8674 8D 11 80										    STA FEOF
+   935 8677 A9 FC											    LDA # <(FIN-GAMEA)
+   936 8679 8D 0C 80										    STA CANTW
+   937 867C A9 05											    LDA # >(FIN-GAMEA)
+   938 867E 8D 0D 80										    STA CANTW+1
+   939 8681 20 DB 86										    JSR WRITETOCASSETTE
+   940 8684 A9 64											    LDA #$00-156
+   941 8686 A6 62											    LDX PALNTS
+   942 8688 F0 02											    BEQ BLK2.NTSC
+   943 868A A9 7E											    LDA #$00-130
+   944 868C												BLK2.NTSC
+   945 868C 85 14											    STA 20
+   946 868E												W1SEG
+   947 868E A5 14											    LDA 20
+   948 8690 D0 FC											    BNE W1SEG
+   949 8692 A9 10											    LDA #$10
+   950 8694 85 14											    STA 20
+   951 8696 A9 01											    LDA #1
+   952 8698 8D 11 80										    STA FEOF
+   953 869B AD 0A 80										    LDA CANTR
+   954 869E 8D 0C 80										    STA CANTW
+   955 86A1 AD 0B 80										    LDA CANTR+1
+   956 86A4 8D 0D 80										    STA CANTW+1
+   957 86A7 A9 04											    LDA #$04
+   958 86A9 8D 12 80										    STA BANCO
+   959 86AC 20 DB 86										    JSR WRITETOCASSETTE
+   960 86AF A9 CC											    LDA #$00-52
+   961 86B1 A4 62											    LDY PALNTS
+   962 86B3 F0 02											    BEQ LOPLEAD1.NTSC
+   963 86B5 A9 D5											    LDA #$00-43
+   964 86B7												LOPLEAD1.NTSC
+   965 86B7 85 14											    STA 20
+   966 86B9												LOPLEAD1
+   967 86B9 A5 14											    LDA 20
+   968 86BB D0 FC											    BNE LOPLEAD1
+   969 86BD A0 02											    LDY #$02
+   970 86BF												SAVEC0LENTO
+   971 86BF 98											    TYA 
+   972 86C0 48											    PHA 
+   973 86C1 A9 C0											    LDA #$C0
+   974 86C3 20 C1 80										    JSR GRABAMULA
+   975 86C6 68											    PLA 
+   976 86C7 A8											    TAY 
+   977 86C8 88											    DEY 
+   978 86C9 10 F4											    BPL SAVEC0LENTO
+   979 86CB A9 0A											    LDA #10
+   980 86CD 85 14											    STA 20
+   981 86CF												FINAL.LOOP
+   982 86CF A5 14											    LDA 20
+   983 86D1 D0 FC											    BNE FINAL.LOOP
+   984 												;
+   985 												; LE DAMOS TIEMPO PARA QUE CIERRE EL ARCHIVO.
+   986 												;
+   987 86D3 A9 3C											    LDA #$3C
+   988 86D5 8D 02 D3										    STA $D302
+   989 86D8 4C B4 85										    JMP OTRACOPIA
+   990 86DB												WRITETOCASSETTE
+   991 86DB 20 34 FD										    JSR $FD34
+   992 86DE												LEADERTIME
+   993 86DE A5 14											    LDA 20
+   994 86E0 C9 20											    CMP #$20
+   995 86E2 90 FA											    BCC LEADERTIME
+   996 86E4 AD 11 80										    LDA FEOF
+   997 86E7 F0 21											    BEQ NOLASTBANCO
+   998 86E9												GRABANDOP02
+   999 86E9 CE 12 80										    DEC BANCO
+  1000 86EC AD 12 80										    LDA BANCO
+  1001 86EF 48											    PHA 
+  1002 86F0 20 31 81										    JSR BANQUEO
+  1003 86F3 68											    PLA 
+  1004 86F4 CD 13 80										    CMP GUARDABANCO
+  1005 86F7 D0 11											    BNE NOLASTBANCO
+  1006 86F9 AD 0E 80										    LDA LASTCANT
+  1007 86FC 8D 0C 80										    STA CANTW
+  1008 86FF AD 0F 80										    LDA LASTCANT+1
+  1009 8702 8D 0D 80										    STA CANTW+1
+  1010 8705 A9 FF											    LDA #$FF
+  1011 8707 8D 11 80										    STA FEOF
+  1012 870A												NOLASTBANCO
+  1013 870A A9 00											    LDA # <$4000
+  1014 870C 85 00											    STA $00
+  1015 870E A9 40											    LDA # >$4000
+  1016 8710 85 01											    STA $01
+  1017 8712 A9 00											    LDA #$00
+  1018 8714 85 02											    STA $02
+  1019 8716 85 03											    STA $03
+  1020 8718												WRITECASSETTE
+  1021 8718 AD 1F D0										    LDA $D01F
+  1022 871B C9 03											    CMP #$03
+  1023 871D D0 03											    BNE SIGAGRBANDO
+  1024 871F 4C D6 FD										    JMP $FDD6
+  1025 8722												SIGAGRBANDO
+  1026 8722 20 0B 85										    JSR SI.IRG
+  1027 8725 A0 00											    LDY #$00
+  1028 8727 B1 00											    LDA ($00),Y
+  1029 8729 20 B4 FD										    JSR $FDB4
+  1030 872C D0 2E											    BNE NONUEVOBLK
+  1031 872E 20 00 85										    JSR NO.IRG
+  1032 8731 A0 87											    LDY #135
+  1033 8733												BUFSCREEN
+  1034 8733 B9 FF 03										    LDA $03FF,Y
+  1035 8736 91 58											    STA ($58),Y
+  1036 8738 88											    DEY 
+  1037 8739 D0 F8											    BNE BUFSCREEN
+  1038 873B A0 D9											    LDY #217
+  1039 873D A2 02											    LDX #$02
+  1040 873F												DECBELLO
+  1041 873F B1 58											    LDA ($58),Y
+  1042 8741 38											    SEC 
+  1043 8742 E9 01											    SBC #$01
+  1044 8744 C9 8F											    CMP #$8F   ;'0-33
+  1045 8746 F0 04											    BEQ NINEBELLO
+  1046 8748 91 58											    STA ($58),Y
+  1047 874A D0 08											    BNE FINBELLO
+  1048 874C												NINEBELLO
+  1049 874C A9 99											    LDA #$99 ;'9-32
+  1050 874E 91 58											    STA ($58),Y
+  1051 8750 88											    DEY 
+  1052 8751 CA											    DEX 
+  1053 8752 10 EB											    BPL DECBELLO
+  1054 8754												FINBELLO
+  1055 8754 EE 80 04										    INC $0480
+  1056 8757 D0 03											    BNE NONUEVOBLK
+  1057 8759 EE 81 04										    INC $0481
+  1058 875C												NONUEVOBLK
+  1059 875C E6 00											    INC $00
+  1060 875E D0 02											    BNE NOINCHIBIS
+  1061 8760 E6 01											    INC $01
+  1062 8762												NOINCHIBIS
+  1063 8762 E6 02											    INC $02
+  1064 8764 D0 02											    BNE NOINCHIS
+  1065 8766 E6 03											    INC $03
+  1066 8768												NOINCHIS
+  1067 8768 A5 03											    LDA $03
+  1068 876A CD 0D 80										    CMP CANTW+1
+  1069 876D D0 A9											    BNE WRITECASSETTE
+  1070 876F A5 02											    LDA $02
+  1071 8771 CD 0C 80										    CMP CANTW
+  1072 8774 D0 A2											    BNE WRITECASSETTE
+  1073 8776 AD 11 80										    LDA FEOF
+  1074 8779 F0 05											    BEQ FINP01
+  1075 877B 30 03											    BMI FINP01
+  1076 877D 4C E9 86										    JMP GRABANDOP02
+  1077 8780												FINP01
+  1078 8780 A6 3D											    LDX $3D
+  1079 8782 F0 10											    BEQ TERMINOWRITE
+  1080 8784 A0 7F											    LDY #$7F
+  1081 8786												POKEANDOESPERO
+  1082 8786 8C 0A D4										    STY $D40A
+  1083 8789 88											    DEY 
+  1084 878A D0 FA											    BNE POKEANDOESPERO
+  1085 878C 8E 7F 04										    STX $047F
+  1086 878F A9 FA											    LDA #$FA
+  1087 8791 20 7C FE										    JSR $FE7C
+  1088 8794												TERMINOWRITE
+  1089 8794 EE 80 04										    INC $0480
+  1090 8797 D0 03											    BNE NOINC481
+  1091 8799 EE 81 04										    INC $0481
+  1092 879C												NOINC481
+  1093 879C AD 11 80										    LDA FEOF
+  1094 879F D0 03											    BNE SIEOF
+  1095 87A1 4C D6 FD										    JMP $FDD6
+  1096 87A4												SIEOF
+  1097 87A4 A2 7F											    LDX #$7F
+  1098 87A6 A9 00											    LDA #$00
+  1099 87A8												FILLBUFFER
+  1100 87A8 9D 00 04										    STA $0400,X
+  1101 87AB 8D 0A D4										    STA $D40A
+  1102 87AE CA											    DEX 
+  1103 87AF 10 F7											    BPL FILLBUFFER
+  1104 87B1 A9 FE											    LDA #$FE
+  1105 87B3 20 7C FE										    JSR $FE7C
+  1106 87B6 4C D6 FD										    JMP $FDD6
+  1107 02E0-02E1> 2D 85										    RUN INICIOPROGRAMA
+  1108 = 003B											EORLEN = FINFIRST-AEOREAR+1
+  1109 = 037D											ADR =   $0380-3
+  1110 = 03FF											RESTABYTE = $03FF
+  1111 = 9C83											DIF =   $A000-ADR
+  1112 87B9												    ORG ADR+DIF
+  1113 A000												AGRABAR
+  1114 A000-A063> 55 55										    .BY $55,$55
+  1115 A002 FA											    .BY $FA
+  1116 A003												BLKUNO
+  1117 A003 00											    .BY $00
+  1118 A004 01											    .BY $01
+  1119 A005 80 03											    .WO *-2-DIF
+  1120 A007 56 E4											    .WO $E456
+  1121 A009 A2 3B											    LDX #EORLEN
+  1122 A00B 9A											    TXS 
+  1123 A00C												EORLOOP
+  1124 A00C 38											    SEC 
+  1125 A00D BD 99 03										    LDA AEOREAR-DIF,X
+  1126 A010 A8											    TAY 
+  1127 A011 ED FF 03										    SBC RESTABYTE
+  1128 A014 8C FF 03										    STY RESTABYTE
+  1129 A017 48											    PHA 
+  1130 A018 CA											    DEX 
+  1131 A019 10 F1											    BPL EORLOOP
+  1132 A01B 60											    RTS 
+  1133 A01C												AEOREAR
+  1134 A01C 01											    .BY $01
+  1135 A01D 01											    .BY $01
+  1136 A01E A2 01											    LDX #$01
+  1137 A020 8E 44 02										    STX $0244
+  1138 A023 CA											    DEX 
+  1139 A024 8E 2F 02										    STX $022F
+  1140 A027 8E 00 D4										    STX $D400
+  1141 A02A 86 41											    STX $41
+  1142 A02C												RELOS
+  1143 A02C A2 EC											    LDX #$00-20
+  1144 A02E 86 14											    STX 20
+  1145 A030												ESPERASINCRO
+  1146 A030 AD 0F D2										    LDA $D20F
+  1147 A033 29 10											    AND #$10
+  1148 A035 D0 F5											    BNE RELOS
+  1149 A037 A6 14											    LDX 20
+  1150 A039 D0 F5											    BNE ESPERASINCRO
+  1151 A03B												TERMINA0
+  1152 A03B AD 0F D2										    LDA $D20F
+  1153 A03E 29 10											    AND #$10
+  1154 A040 F0 F9											    BEQ TERMINA0
+  1155 A042 A2 0B											    LDX #$0B
+  1156 A044												TRANSFER
+  1157 A044 BD D5 03										    LDA DATIX1-DIF,X
+  1158 A047 9D 00 03										    STA $0300,X
+  1159 A04A CA											    DEX 
+  1160 A04B 10 F7											    BPL TRANSFER
+  1161 A04D 20 59 E4										    JSR $E459
+  1162 A050 A2 FF											    LDX #$FF
+  1163 A052 9A											    TXS 
+  1164 A053 6C 04 03										    JMP ($0304)
+  1165 A056												FINFIRST
+  1166 A056 68											    PLA 
+  1167 A057 40											    RTI 
+  1168 A058												DATIX1
+  1169 A058 60											    .BY $60
+  1170 A059 00											    .BY $00
+  1171 A05A 52											    .BY $52
+  1172 A05B 40											    .BY $40
+  1173 A05C 00 20											    .WO BLKFALSO
+  1174 A05E 23											    .BY $23
+  1175 A05F 00											    .BY $00
+  1176 A060 4B 02											    .WO FINBLKFALSO-BLKFALSO
+  1177 A062 00											    .BY $00
+  1178 A063 80											    .BY $80
+  1179 A064												    ORG $03EA+DIF
+  1180 A06D-A06D> 00										    .BY $00
+  1181 A06E												    ORG AGRABAR+$84
+  1182 A084												GRABABLKUNO
+  1183 A084-A19C> AD 10 80										    LDA FEOR
+  1184 A087 F0 03											    BEQ EORNOLISTO
+  1185 A089 4C 0B A1										    JMP EORLISTO
+  1186 A08C												EORNOLISTO
+  1187 A08C A9 34											    LDA # <EORBLOCK
+  1188 A08E 85 0C											    STA DESDE
+  1189 A090 A9 20											    LDA # >EORBLOCK
+  1190 A092 85 0D											    STA DESDE+1
+  1191 A094 A9 4B											    LDA # <FINBLKFALSO
+  1192 A096 85 0E											    STA HASTA
+  1193 A098 A9 22											    LDA # >FINBLKFALSO
+  1194 A09A 85 0F											    STA HASTA+1
+  1195 A09C A9 46											    LDA #$46
+  1196 A09E 8D 08 80										    STA EORBYTE
+  1197 A0A1 20 15 81										    JSR EOREO
+  1198 A0A4 A9 2F											    LDA # <EORBLOCK1
+  1199 A0A6 85 0C											    STA DESDE
+  1200 A0A8 A9 30											    LDA # >EORBLOCK1
+  1201 A0AA 85 0D											    STA DESDE+1
+  1202 A0AC A9 FA											    LDA # <FINBLKDOS
+  1203 A0AE 85 0E											    STA HASTA
+  1204 A0B0 A9 33											    LDA # >FINBLKDOS
+  1205 A0B2 85 0F											    STA HASTA+1
+  1206 A0B4 A9 FF											    LDA #$FF
+  1207 A0B6 8D 08 80										    STA EORBYTE
+  1208 A0B9 20 15 81										    JSR EOREO
+  1209 A0BC A9 22											    LDA # <GAME1A
+  1210 A0BE 85 0C											    STA DESDE
+  1211 A0C0 A9 40											    LDA # >GAME1A
+  1212 A0C2 85 0D											    STA DESDE+1
+  1213 A0C4 A9 FC											    LDA # <FIN
+  1214 A0C6 85 0E											    STA HASTA
+  1215 A0C8 A9 45											    LDA # >FIN
+  1216 A0CA 85 0F											    STA HASTA+1
+  1217 A0CC A9 29											    LDA #$29
+  1218 A0CE 8D 08 80										    STA EORBYTE
+  1219 A0D1 20 15 81										    JSR EOREO
+  1220 A0D4 A2 3B											    LDX #EORLEN
+  1221 A0D6 8E 10 80										    STX FEOR
+  1222 A0D9												EORLOOP1
+  1223 A0D9 18											    CLC 
+  1224 A0DA BD 1C A0										    LDA AEOREAR,X
+  1225 A0DD 6D 9C A1										    ADC SUMABYTE
+  1226 A0E0 8D 9C A1										    STA SUMABYTE
+  1227 A0E3 9D 1C A0										    STA AEOREAR,X
+  1228 A0E6 CA											    DEX 
+  1229 A0E7 10 F0											    BPL EORLOOP1
+  1230 A0E9 A9 00											    LDA #0
+  1231 A0EB 8D 77 A1										    STA CHKSUM
+  1232 A0EE A2 82											    LDX #$82
+  1233 A0F0 A9 01											    LDA #$01
+  1234 A0F2 9D 00 A0										    STA AGRABAR,X
+  1235 A0F5												ADCHKSUM
+  1236 A0F5 BD 00 A0										    LDA AGRABAR,X
+  1237 A0F8 18											    CLC 
+  1238 A0F9 6D 77 A1										    ADC CHKSUM
+  1239 A0FC 69 00											    ADC #0
+  1240 A0FE 8D 77 A1										    STA CHKSUM
+  1241 A101 CA											    DEX 
+  1242 A102 C9 FF											    CMP #$FF
+  1243 A104 D0 EF											    BNE ADCHKSUM
+  1244 A106 A2 83											    LDX #$83
+  1245 A108 9D 03 A0										    STA BLKUNO,X
+  1246 A10B												EORLISTO
+  1247 A10B 20 34 FD										    JSR $FD34   ; GRABA LEADER
+  1248 A10E 18											    CLC 
+  1249 A10F A9 64											    LDA #100
+  1250 A111 A6 62											    LDX PALNTS
+  1251 A113 F0 02											    BEQ LEADER.NTSC
+  1252 A115 A9 53											    LDA #83
+  1253 A117												LEADER.NTSC
+  1254 A117 65 14											    ADC 20
+  1255 A119												WLEADERTIME
+  1256 A119 C5 14											    CMP 20
+  1257 A11B D0 FC											    BNE WLEADERTIME
+  1258 A11D A2 0B											    LDX #$0B
+  1259 A11F												?LOOP
+  1260 A11F BD 78 A1										    LDA DATA1,X
+  1261 A122 9D 00 03										    STA $0300,X
+  1262 A125 CA											    DEX 
+  1263 A126 10 F7											    BPL ?LOOP
+  1264 A128 20 59 E4										    JSR $E459   ; GRABA PRIMER BLOQUE
+  1265 A12B 18											    CLC 
+  1266 A12C A9 0F											    LDA #$0F    ; 0.25 SEC NTSC
+  1267 A12E A6 62											    LDX PALNTS
+  1268 A130 F0 02											    BEQ PRIMERBLOQUE.NTSC
+  1269 A132 A9 0C											    LDA #$0C    ; 0.25 SEC PAL
+  1270 A134												PRIMERBLOQUE.NTSC
+  1271 A134 65 14											    ADC 20
+  1272 A136												ESPERIX
+  1273 A136 C5 14											    CMP 20
+  1274 A138 D0 FC											    BNE ESPERIX
+  1275 A13A 20 81 70										    JSR GRABATRAMPA
+  1276 A13D 18											    CLC 
+  1277 A13E A5 14											    LDA 20
+  1278 A140 69 0F											    ADC #$0F
+  1279 A142												WFALSO
+  1280 A142 C5 14											    CMP 20
+  1281 A144 D0 FC											    BNE WFALSO
+  1282 A146 A2 0B											    LDX #$0B
+  1283 A148												SAVEFALSO
+  1284 A148 BD 90 A1										    LDA DATAFALSA,X
+  1285 A14B 9D 00 03										    STA $0300,X
+  1286 A14E CA											    DEX 
+  1287 A14F 10 F7											    BPL SAVEFALSO
+  1288 A151 20 59 E4										    JSR $E459
+  1289 A154 18											    CLC 
+  1290 A155 A9 28											    LDA #40
+  1291 A157 A6 62											    LDX PALNTS
+  1292 A159 F0 02											    BEQ WFORIRGTIME.NTSC
+  1293 A15B A9 21											    LDA #33
+  1294 A15D												WFORIRGTIME.NTSC
+  1295 A15D 65 14											    ADC 20
+  1296 A15F												WFORIRGTIME
+  1297 A15F C5 14											    CMP 20
+  1298 A161 D0 FC											    BNE WFORIRGTIME
+  1299 A163 A2 0B											    LDX #$0B
+  1300 A165												?LOOP1
+  1301 A165 BD 84 A1										    LDA DATA2,X
+  1302 A168 9D 00 03										    STA $0300,X
+  1303 A16B CA											    DEX 
+  1304 A16C 10 F7											    BPL ?LOOP1
+  1305 A16E 20 59 E4										    JSR $E459
+  1306 A171 A9 34											    LDA #$34
+  1307 A173 8D 02 D3										    STA 54018
+  1308 A176 60											    RTS 
+  1309 A177												CHKSUM
+  1310 A177 00											    .BY 0
+  1311 A178												DATA1
+  1312 A178 60 00 57 80										    .BY $60,0,$57,$80
+  1313 A17C 00 A0											    .WO AGRABAR
+  1314 A17E 23 00											    .BY $23,0
+  1315 A180 83 00											    .WO $83
+  1316 A182 00 80											    .BY 0,$80
+  1317 A184												DATA2
+  1318 A184 60 00 57 80										    .BY $60,0,$57,$80
+  1319 A188 00 30											    .WO BLKDOS
+  1320 A18A 23 00											    .BY $23,0
+  1321 A18C FA 03											    .WO FINBLKDOS-BLKDOS
+  1322 A18E 00											    .BY 0
+  1323 A18F 80											    .BY $80
+  1324 A190												DATAFALSA
+  1325 A190 60 00 57 80										    .BY $60,0,$57,$80
+  1326 A194 00 20											    .WO BLKFALSO
+  1327 A196 23 00											    .BY $23,0
+  1328 A198 4B 02											    .WO FINBLKFALSO-BLKFALSO
+  1329 A19A 00 80											    .BY 0,$80
+  1330 A19C												SUMABYTE
+  1331 A19C FA											    .BY $FA
+  1332 A19D												    ORG $7000-4
+  1333 6FFC												TRAMPA
+  1334 6FFC-7081> 55 55 FC										    .BY $55,$55,$FC
+  1335 6FFF 01											    .BY $01
+  1336 7000 00 70											    .WO $7000
+  1337 7002 56 E4											    .WO $E456
+  1338 7004 A9 00											    LDA #$00
+  1339 7006 A0 02											    LDY #$02
+  1340 7008 91 58											    STA ($58),Y
+  1341 700A 8D C6 02										    STA 710
+  1342 700D 85 41											    STA $41
+  1343 700F A2 10											    LDX #$10
+  1344 7011 A9 03											    LDA #$03
+  1345 7013 9D EC 02										    STA $02EC,X
+  1346 7016 9D 42 03										    STA $0342,X
+  1347 7019 A9 04											    LDA #$04
+  1348 701B 9D 4A 03										    STA $034A,X
+  1349 701E A9 80											    LDA #$80
+  1350 7020 9D 4B 03										    STA $034B,X
+  1351 7023 A9 31											    LDA # <$C431
+  1352 7025 9D 44 03										    STA $0344,X
+  1353 7028 A9 C4											    LDA # >$C431
+  1354 702A 9D 45 03										    STA $0345,X
+  1355 702D 20 56 E4										    JSR $E456
+  1356 7030 A9 00											    LDA #$00
+  1357 7032 9D 44 03										    STA $0344,X
+  1358 7035 9D 48 03										    STA $0348,X
+  1359 7038 A9 07											    LDA #$07
+  1360 703A 9D 45 03										    STA $0345,X
+  1361 703D A9 06											    LDA #$06
+  1362 703F 9D 49 03										    STA $0349,X
+  1363 7042 A9 07											    LDA #$07
+  1364 7044 9D 42 03										    STA $0342,X
+  1365 7047 20 56 E4										    JSR $E456
+  1366 704A 88											    DEY 
+  1367 704B												LOOPTRAMPA
+  1368 704B B9 00 07										    LDA $0700,Y
+  1369 704E 59 00 08										    EOR $0800,Y
+  1370 7051 9D 00 07										    STA $0700,X
+  1371 7054 88											    DEY 
+  1372 7055 D0 F4											    BNE LOOPTRAMPA
+  1373 7057 A9 66											    LDA # <DLTRAMPA+2
+  1374 7059 8D 30 02										    STA 560
+  1375 705C A9 72											    LDA # >DLTRAMPA+2
+  1376 705E 8D 31 02										    STA 561
+  1377 7061 4C 00 07										    JMP $0700
+  1378 7064												DLTRAMPA
+  1379 7064 70 70 70 46										    .BY 112,112,112,64+6
+  1380 7068 6D 70											    .WO TEXTOTRAMPA+2
+  1381 706A 41											    .BY 65
+  1382 706B												TEXTOTRAMPA
+  1383 706B 00 00 00 00 74 75 72 62 6F 00 33 2F 26 34 37 21 32 25 00 00 00 00 00			    .SB "    turbo SOFTWARE     "
+  1384 7082												    ORG $707F
+  1385 707F												CHEQUEO
+  1386 707F-70FE> 00										    .BY 0
+  1387 7080												FCHK
+  1388 7080 00											    .BY 0
+  1389 7081												GRABATRAMPA
+  1390 7081 AD 80 70										    LDA FCHK
+  1391 7084 D0 20											    BNE CHEQUEOK
+  1392 7086 EE 80 70										    INC FCHK
+  1393 7089 A9 00											    LDA #$00
+  1394 708B 8D 7F 70										    STA CHEQUEO
+  1395 708E A2 82											    LDX #$82
+  1396 7090												CHKTRAMPA
+  1397 7090 BD FC 6F										    LDA TRAMPA,X
+  1398 7093 18											    CLC 
+  1399 7094 69 00											    ADC #$00
+  1400 7096 6D 7F 70										    ADC CHEQUEO
+  1401 7099 8D 7F 70										    STA CHEQUEO
+  1402 709C CA											    DEX 
+  1403 709D E0 FF											    CPX #$FF
+  1404 709F D0 EF											    BNE CHKTRAMPA
+  1405 70A1 A2 83											    LDX #$83
+  1406 70A3 9D FC 6F										    STA TRAMPA,X
+  1407 70A6												CHEQUEOK
+  1408 70A6 A2 0B											    LDX #$0B
+  1409 70A8												LOOPTRAMPIX
+  1410 70A8 BD F3 70										    LDA DATATRAMPA,X
+  1411 70AB 9D 00 03										    STA $0300,X
+  1412 70AE CA											    DEX 
+  1413 70AF 10 F7											    BPL LOOPTRAMPIX
+  1414 70B1 20 59 E4										    JSR $E459
+  1415 70B4 18											    CLC 
+  1416 70B5 A9 0F											    LDA #$0F
+  1417 70B7 A6 62											    LDX PALNTS
+  1418 70B9 F0 02											    BEQ TRAMPA.NTSC
+  1419 70BB A9 0C											    LDA #$0C
+  1420 70BD												TRAMPA.NTSC
+  1421 70BD 65 14											    ADC 20
+  1422 70BF												ESPERATRAMPA
+  1423 70BF C5 14											    CMP 20
+  1424 70C1 D0 FC											    BNE ESPERATRAMPA
+  1425 70C3 A9 83											    LDA #$83
+  1426 70C5 8D 48 FE										    STA $FE48   ; BLOQUE DE 131 BYTES (ESTANDAR ATARI)
+  1427 70C8 20 EA FD										    JSR $FDEA   ; GRABA EOF
+  1428 70CB A9 85											    LDA #133
+  1429 70CD 8D 48 FE										    STA $FE48   ; AGREGA 2 BYTES BLOQUE (PARA AGREGAR CONTADOR)
+  1430 70D0 A9 8B											    LDA #139
+  1431 70D2 8D 0F D2										    STA $D20F
+  1432 70D5 A2 28											    LDX #$28    ; VALOR ORIGINAL: 4
+  1433 70D7 A4 62											    LDY PALNTS
+  1434 70D9 F0 02											    BEQ LOOPLINEA.NTSC
+  1435 70DB A2 21											    LDX #$21
+  1436 70DD												LOOPLINEA.NTSC
+  1437 70DD AC 0B D4										    LDY $D40B
+  1438 70E0												LOOPLINEA
+  1439 70E0 CC 0B D4										    CPY $D40B
+  1440 70E3 F0 FB											    BEQ LOOPLINEA
+  1441 70E5												WLINE
+  1442 70E5 CC 0B D4										    CPY $D40B
+  1443 70E8 D0 FB											    BNE WLINE
+  1444 70EA CA											    DEX 
+  1445 70EB 10 F0											    BPL LOOPLINEA.NTSC
+  1446 70ED A9 0B											    LDA #11
+  1447 70EF 8D 0F D2										    STA $D20F
+  1448 70F2 60											    RTS 
+  1449 70F3												DATATRAMPA
+  1450 70F3 60 00 57 80										    .BY $60,$00,$57,$80
+  1451 70F7 FC 6F											    .WO TRAMPA
+  1452 70F9 23 00											    .BY $23,$00
+  1453 70FB 83 00											    .WO $83
+  1454 70FD 00 80											    .BY $00,$80
+  1455 70FF												    ORG $2000
+  1456 2000												BLKFALSO
+  1457 2000-224A> 55 55										    .BY $55,$55
+  1458 2002 98											    TYA 
+  1459 2003 10 0B											    BPL BLOCKOK
+  1460 2005 A9 22											    LDA #34
+  1461 2007 8D 2F 02										    STA 559
+  1462 200A 20 C7 ED										    JSR $EDC7
+  1463 200D 4C FC C8										    JMP $C8FC
+  1464 2010												BLOCKOK
+  1465 2010 AD 34 20										    LDA EORBLOCK
+  1466 2013 49 46											    EOR #$46
+  1467 2015 8D 34 20										    STA EORBLOCK
+  1468 2018 EE 16 20										    INC BLOCKOK+6
+  1469 201B EE 11 20										    INC BLOCKOK+1
+  1470 201E D0 06											    BNE NOINCBLOCK2
+  1471 2020 EE 17 20										    INC BLOCKOK+7
+  1472 2023 EE 12 20										    INC BLOCKOK+2
+  1473 2026												NOINCBLOCK2
+  1474 2026 AD 12 20										    LDA BLOCKOK+2
+  1475 2029 C9 22											    CMP # >FINBLKFALSO
+  1476 202B D0 E3											    BNE BLOCKOK
+  1477 202D AD 11 20										    LDA BLOCKOK+1
+  1478 2030 C9 4B											    CMP # <FINBLKFALSO
+  1479 2032 D0 DC											    BNE BLOCKOK
+  1480 2034												EORBLOCK
+  1481 2034 A9 00											    LDA #$00
+  1482 2036 8D C6 02										    STA 710
+  1483 2039 A9 FF											    LDA #$FF
+  1484 203B 8D 01 D3										    STA $D301
+  1485 203E 20 FD 21										    JSR ROMARAM
+  1486 2041 A9 22											    LDA #34
+  1487 2043 8D 2F 02										    STA 559
+  1488 2046 8D 00 D4										    STA $D400
+  1489 2049 A9 D6											    LDA # <DL
+  1490 204B 8D 30 02										    STA 560
+  1491 204E A9 21											    LDA # >DL
+  1492 2050 8D 31 02										    STA 561
+  1493 2053												LINEAPOSITIVA
+  1494 2053 AC 0B D4										    LDY $D40B
+  1495 2056 30 FB											    BMI LINEAPOSITIVA
+  1496 2058 A9 FF											    LDA #$FF
+  1497 205A 85 50											    STA $50
+  1498 205C A9 9B											    LDA # <MUS
+  1499 205E 8D 22 02										    STA $0222
+  1500 2061 A9 20											    LDA # >MUS
+  1501 2063 8D 23 02										    STA $0223
+  1502 2066 A2 0B											    LDX #$0B
+  1503 2068												CARGALASTBLOCK
+  1504 2068 BD CA 21										    LDA DATALAST,X
+  1505 206B 9D 00 03										    STA $0300,X
+  1506 206E CA											    DEX 
+  1507 206F 10 F7											    BPL CARGALASTBLOCK
+  1508 2071 A9 FD											    LDA #$FF-2
+  1509 2073 85 14											    STA 20
+  1510 2075												WVBI
+  1511 2075 A5 14											    LDA 20
+  1512 2077 D0 FC											    BNE WVBI
+  1513 2079 A0 13											    LDY #19
+  1514 207B												CHECKTURBO
+  1515 207B 18											    CLC 
+  1516 207C B9 E9 21										    LDA DATA,Y
+  1517 207F 6D 8B 20										    ADC BITLOCO+1
+  1518 2082 69 00											    ADC #$00
+  1519 2084 8D 8B 20										    STA BITLOCO+1
+  1520 2087 88											    DEY 
+  1521 2088 10 F1											    BPL CHECKTURBO
+  1522 208A												BITLOCO
+  1523 208A A9 00											    LDA #$00
+  1524 208C 38											    SEC 
+  1525 208D E9 9A											    SBC #$9A
+  1526 208F 30 07											    BMI NODIO
+  1527 2091 F0 02											    BEQ SIDIO
+  1528 2093 10 03											    BPL NODIO
+  1529 2095												SIDIO
+  1530 2095 20 59 E4										    JSR $E459
+  1531 2098												NODIO
+  1532 2098 6C 04 03										    JMP ($0304)
+  1533 209B												MUS
+  1534 209B A9 82											    LDA #$82
+  1535 209D 8D 03 D2										    STA $D203
+  1536 20A0 CE EF 20										    DEC SCUIS
+  1537 20A3 AD EF 20										    LDA SCUIS
+  1538 20A6 D0 05											    BNE NO0SCUIS
+  1539 20A8 A9 78											    LDA #120
+  1540 20AA 8D EF 20										    STA SCUIS
+  1541 20AD												NO0SCUIS
+  1542 20AD 8D 02 D2										    STA $D202
+  1543 20B0 CE EE 20										    DEC VOLUME
+  1544 20B3 AD EE 20										    LDA VOLUME
+  1545 20B6 8D 01 D2										    STA $D201
+  1546 20B9 C9 A2											    CMP #$A2
+  1547 20BB D0 1D											    BNE FINMUS
+  1548 20BD A9 AA											    LDA #$AA
+  1549 20BF 8D EE 20										    STA VOLUME
+  1550 20C2 EE F0 20										    INC QUENOTA
+  1551 20C5 AE F0 20										    LDX QUENOTA
+  1552 20C8 BD F1 20										    LDA TONOS,X
+  1553 20CB C9 FF											    CMP #$FF
+  1554 20CD D0 08											    BNE NOFINMUS
+  1555 20CF A9 17											    LDA #23
+  1556 20D1 8D F0 20										    STA QUENOTA
+  1557 20D4 4C 9B 20										    JMP MUS
+  1558 20D7												NOFINMUS
+  1559 20D7 8D 00 D2										    STA $D200
+  1560 20DA												FINMUS
+  1561 20DA A5 62											    LDA PALNTS
+  1562 20DC F0 0C											    BEQ FINMUS.FIN
+  1563 20DE CE ED 20										    DEC FINMUS.CONTADOR
+  1564 20E1 D0 07											    BNE FINMUS.FIN
+  1565 20E3 A9 06											    LDA #6
+  1566 20E5 8D ED 20										    STA FINMUS.CONTADOR
+  1567 20E8 D0 B1											    BNE MUS
+  1568 20EA												FINMUS.FIN
+  1569 20EA 4C 5F E4										    JMP $E45F
+  1570 20ED												FINMUS.CONTADOR
+  1571 20ED 06											    .BY 6
+  1572 20EE AA											VOLUME .BY $AA
+  1573 20EF 82											SCUIS .BY 130
+  1574 20F0 00											QUENOTA .BY 0
+  1575 20F1												TONOS
+  1576 20F1 00 00 00 00 00 00 00 00 00 00 00 00							    .BY 0,0,0,0,0,0,0,0,0,0,0,0
+  1577 20FD 00 00 00 00 00 00 00 00 00 00 00 00							    .BY 0,0,0,0,0,0,0,0,0,0,0,0
+  1578 2109 A2 51 51 51 51 51 5B 51 51 51 51 51							    .BY 162,81,81,81,81,81,91,81,81,81,81,81
+  1579 2115 66 51 51 51 51 51 6C 51 51 51 51 51							    .BY 102,81,81,81,81,81,108,81,81,81,81,81
+  1580 2121 79 51 51 51 51 51 79 5B 88 66 90 6C							    .BY 121,81,81,81,81,81,121,91,136,102,144,108
+  1581 212D A2 79 90 6C 88 66 90 6C A2 79 B6 88							    .BY 162,121,144,108,136,102,144,108,162,121,182,136
+  1582 2139 A2 79 90 6C 88 66 90 6C A2 79 B6 88							    .BY 162,121,144,108,136,102,144,108,162,121,182,136
+  1583 2145 CC 90 D9 A2 F3 CC F3 B6 D9 A2 CC D9							    .BY 204,144,217,162,243,204,243,182,217,162,204,217
+  1584 2151 A2 79 90 6C 88 66 90 6C A2 79 B6 88							    .BY 162,121,144,108,136,102,144,108,162,121,182,136
+  1585 215D A2 79 90 6C 88 66 90 6C A2 79 B6 88							    .BY 162,121,144,108,136,102,144,108,162,121,182,136
+  1586 2169 6C 00 6C 6C 00 79 00 00 00 00 00 00							    .BY 108,0,108,108,0,121,0,0,0,0,0,0
+  1587 2175 88 00 88 88 00 90 00 00 00 00 00 00							    .BY 136,0,136,136,0,144,0,0,0,0,0,0
+  1588 2181 A2 00 A2 00 A2 00 90 00 90 00 90 00							    .BY 162,0,162,0,162,0,144,0,144,0,144,0
+  1589 218D 88 00 88 00 90 00 A2 00 00 00 00 00							    .BY 136,0,136,0,144,0,162,0,0,0,0,0
+  1590 2199 6C 00 6C 6C 00 79 00 00 00 00 00 00							    .BY 108,0,108,108,0,121,0,0,0,0,0,0
+  1591 21A5 88 00 88 88 00 90 00 00 00 00 00 00							    .BY 136,0,136,136,0,144,0,0,0,0,0,0
+  1592 21B1 A2 00 A2 00 00 A2 90 00 90 00 00 90							    .BY 162,0,162,0,0,162,144,0,144,0,0,144
+  1593 21BD 88 00 88 90 00 A2 00 00 00 00 00 00 FF							    .BY 136,0,136,144,0,162,0,0,0,0,0,0,$FF
+  1594 21CA												DATALAST
+  1595 21CA 60											    .BY $60
+  1596 21CB 00											    .BY $00
+  1597 21CC 52											    .BY $52
+  1598 21CD 40											    .BY $40
+  1599 21CE 00 30											    .WO BLKDOS
+  1600 21D0 23											    .BY $23
+  1601 21D1 00											    .BY $00
+  1602 21D2 FA 03											    .WO FINBLKDOS-BLKDOS
+  1603 21D4 00											    .BY $00
+  1604 21D5 80											    .BY $80
+  1605 21D6												DL
+  1606 21D6 70 70 70 46										    .BY 112,112,112,64+6
+  1607 21DA												CAMBIO1
+  1608 21DA E9 21											    .WO DATA
+  1609 21DC 70 70 70 70 70 70 70 70 70 70								    .BY 112,112,112,112,112,112,112,112,112,112
+  1610 21E6 41											    .BY 65
+  1611 21E7 D6 21											    .WO DL
+  1612 21E9												DATA
+  1613 21E9 00 00 00 74 75 72 62 6F 00 33 2F 26 34 37 21 32 25 00 00 00				    .SB "   turbo SOFTWARE   "
+  1614 21FD												ROMARAM
+  1615 21FD A9 40											    LDA #$40
+  1616 21FF 48											    PHA 
+  1617 2200 AA											    TAX 
+  1618 2201 A9 00											    LDA #$00
+  1619 2203 48											    PHA 
+  1620 2204 A8											    TAY 
+  1621 2205 84 CD											    STY ROM
+  1622 2207 84 CB											    STY RAM
+  1623 2209												REENTRE
+  1624 2209 86 CC											    STX RAM+1
+  1625 220B A2 C0											    LDX #$C0
+  1626 220D												LOOPCITO
+  1627 220D 86 CE											    STX ROM+1
+  1628 220F												LOOP1
+  1629 220F B1 CD											    LDA (ROM),Y
+  1630 2211 91 CB											    STA (RAM),Y
+  1631 2213 88											    DEY 
+  1632 2214 D0 F9											    BNE LOOP1
+  1633 2216 E6 CC											    INC RAM+1
+  1634 2218 E6 CE											    INC ROM+1
+  1635 221A E8											    INX 
+  1636 221B F0 08											    BEQ ROMOFF
+  1637 221D E0 D0											    CPX #$D0
+  1638 221F D0 EE											    BNE LOOP1
+  1639 2221 A2 D8											    LDX #$D8
+  1640 2223 D0 E8											    BNE LOOPCITO
+  1641 2225												ROMOFF
+  1642 2225 78											    SEI 
+  1643 2226 68											    PLA 
+  1644 2227 8D 0E D4										    STA $D40E
+  1645 222A AD 01 D3										    LDA $D301
+  1646 222D 29 FE											    AND #$FE
+  1647 222F 8D 01 D3										    STA $D301
+  1648 2232												RETURN
+  1649 2232 A9 CB											    LDA #RAM
+  1650 2234 8D 10 22										    STA LOOP1+1
+  1651 2237 A9 CD											    LDA #ROM
+  1652 2239 8D 12 22										    STA LOOP1+3
+  1653 223C A9 60											    LDA #$60
+  1654 223E 8D 2A 22										    STA ROMOFF+5
+  1655 2241 A9 58											    LDA #$58
+  1656 2243 8D 25 22										    STA ROMOFF
+  1657 2246 A2 40											    LDX #$40
+  1658 2248 4C 09 22										    JMP REENTRE
+  1659 224B												FINBLKFALSO
+  1660 												;****************************
+  1661 												;TENIS2.MAC
+  1662 												;****************************
+  1663 224B												    ORG $3000
+  1664 3000												BLKDOS
+  1665 3000-33F9> 55 55										    .BY $55,$55
+  1666 = 3000											ORIGEN = $3000
+  1667 = CC00											PROGRAMA = $CC00
+  1668 3002 98											    TYA 
+  1669 3003 10 06											    BPL BLKOK
+  1670 3005 20 C7 ED										    JSR $EDC7
+  1671 3008 4C FC C8										    JMP $C8FC
+  1672 300B												BLKOK
+  1673 300B AD 2F 30										    LDA EORBLOCK1
+  1674 300E 49 FF											    EOR #$FF
+  1675 3010 8D 2F 30										    STA EORBLOCK1
+  1676 3013 EE 11 30										    INC BLKOK+6
+  1677 3016 EE 0C 30										    INC BLKOK+1
+  1678 3019 D0 06											    BNE NOICRHI
+  1679 301B EE 12 30										    INC BLKOK+7
+  1680 301E EE 0D 30										    INC BLKOK+2
+  1681 3021												NOICRHI
+  1682 3021 AD 0D 30										    LDA BLKOK+2
+  1683 3024 C9 33											    CMP # >FINBLKDOS
+  1684 3026 D0 E3											    BNE BLKOK
+  1685 3028 AD 0C 30										    LDA BLKOK+1
+  1686 302B C9 FA											    CMP # <FINBLKDOS
+  1687 302D D0 DC											    BNE BLKOK
+  1688 302F												EORBLOCK1
+  1689 302F AD 5A E4										    LDA $E45A
+  1690 3032 8D 2D 32										    STA SALTO
+  1691 3035 AD 5B E4										    LDA $E45B
+  1692 3038 8D 2E 32										    STA SALTO+1
+  1693 303B A9 00											    LDA # <(RAMPROG+SET)
+  1694 303D 8D 5A E4										    STA $E45A
+  1695 3040 85 CD											    STA ROM
+  1696 3042 A9 CC											    LDA # >(RAMPROG+SET)
+  1697 3044 8D 5B E4										    STA $E45B
+  1698 3047 85 CE											    STA ROM+1
+  1699 3049 A9 FC											    LDA # <RAMPROG
+  1700 304B 85 CB											    STA RAM
+  1701 304D A9 30											    LDA # >RAMPROG
+  1702 304F 85 CC											    STA RAM+1
+  1703 3051 A0 00											    LDY #0
+  1704 3053 A2 03											    LDX #3
+  1705 3055												ARRIBAROM
+  1706 3055 B1 CB											    LDA (RAM),Y
+  1707 3057 91 CD											    STA (ROM),Y
+  1708 3059 C8											    INY 
+  1709 305A D0 F9											    BNE ARRIBAROM
+  1710 305C E6 CC											    INC RAM+1
+  1711 305E E6 CE											    INC ROM+1
+  1712 3060 CA											    DEX 
+  1713 3061 10 F2											    BPL ARRIBAROM
+  1714 3063 A2 02											    LDX #$02
+  1715 3065												LOOPINTERRUPCION
+  1716 3065 BD F6 30										    LDA JSRINTERRUPCION,X
+  1717 3068 9D 59 EB										    STA $EB59,X
+  1718 306B BD F9 30										    LDA ERRORYA,X
+  1719 306E 9D 1D EB										    STA $EB1D,X
+  1720 3071 CA											    DEX 
+  1721 3072 10 F1											    BPL LOOPINTERRUPCION
+  1722 3074 8E DB 02										    STX $02DB
+  1723 3077 8E F8 03										    STX $03F8
+  1724 307A 8E 0D FE										    STX $FE0D
+  1725 307D A6 62											    LDX $62
+  1726 307F A9 00											    LDA #$00
+  1727 3081 8D 80 04										    STA $0480
+  1728 3084 8D 81 04										    STA $0481
+  1729 3087 9D 91 FE										    STA $FE91,X
+  1730 308A A9 32											    LDA #$32
+  1731 308C 9D 93 FE										    STA $FE93,X
+  1732 308F A9 EA											    LDA #$EA
+  1733 3091 8D F3 EB										    STA $EBF3
+  1734 3094 8D F4 EB										    STA $EBF4
+  1735 3097 A9 C0											    LDA #$C0
+  1736 3099 85 6A											    STA $6A
+  1737 309B A9 85											    LDA #133
+  1738 309D 8D 48 FE										    STA $FE48
+  1739 30A0 A9 0C											    LDA #12
+  1740 30A2 8D FC 02										    STA 764
+  1741 30A5 A2 40											    LDX #$40
+  1742 30A7 A9 0C											    LDA #$0C
+  1743 30A9 9D 42 03										    STA $0342,X
+  1744 30AC 20 56 E4										    JSR $E456
+  1745 30AF A2 40											    LDX #$40
+  1746 30B1 A9 03											    LDA #$03
+  1747 30B3 9D 42 03										    STA $0342,X
+  1748 30B6 A9 04											    LDA #$04
+  1749 30B8 9D 4A 03										    STA $034A,X
+  1750 30BB A9 80											    LDA #$80
+  1751 30BD 9D 4B 03										    STA $034B,X
+  1752 30C0 A9 F3											    LDA # <C
+  1753 30C2 9D 44 03										    STA $0344,X
+  1754 30C5 A9 30											    LDA # >C
+  1755 30C7 9D 45 03										    STA $0345,X
+  1756 30CA 20 56 E4										    JSR $E456
+  1757 30CD A2 40											    LDX #$40
+  1758 30CF A9 00											    LDA # <(GAMEA+Z)
+  1759 30D1 9D 44 03										    STA $0344,X
+  1760 30D4 A9 D8											    LDA # >(GAMEA+Z)
+  1761 30D6 9D 45 03										    STA $0345,X
+  1762 30D9 A9 FC											    LDA # <(FIN-GAMEA)
+  1763 30DB 9D 48 03										    STA $0348,X
+  1764 30DE A9 05											    LDA # >(FIN-GAMEA)
+  1765 30E0 9D 49 03										    STA $0349,X
+  1766 30E3 A9 07											    LDA #$07
+  1767 30E5 9D 42 03										    STA $0342,X
+  1768 30E8 A9 F0											    LDA #$F0
+  1769 30EA 8D 34 CD										    STA QUEBLK+SET+1
+  1770 30ED 20 56 E4										    JSR $E456
+  1771 30F0 4C 00 D8										    JMP GAMEA+Z
+  1772 30F3												C
+  1773 30F3 43 3A 9B										    .BY 'C:',$9B
+  1774 30F6												JSRINTERRUPCION
+  1775 30F6 20 10 CD										    JSR INTERRUPCION+SET
+  1776 30F9												ERRORYA
+  1777 30F9 20 32 CC										    JSR ERROR?+SET
+  1778 30FC												RAMPROG
+  1779 30FC AD 00 03										    LDA $0300
+  1780 30FF C9 60											    CMP #$60
+  1781 3101 D0 28											    BNE READBLOCK
+  1782 3103												NEXT
+  1783 3103 20 2F CC										    JSR READBLOCK+SET
+  1784 3106 30 34											    BMI ERROR
+  1785 3108												VUELTABLK1
+  1786 3108 AD 80 04										    LDA $0480
+  1787 310B 8D 33 CD										    STA QUEBLK+SET
+  1788 310E AD 81 04										    LDA $0481
+  1789 3111 8D 34 CD										    STA QUEBLK+SET+1
+  1790 3114 A2 02											    LDX #$02
+  1791 3116												COUNTBLOCK
+  1792 3116 DE 0E CE										    DEC BLK+SET,X
+  1793 3119 BD 0E CE										    LDA BLK+SET,X
+  1794 311C C9 8F											    CMP #$8F  ;'0-33
+  1795 311E D0 08											    BNE FINCOUNT
+  1796 3120 A9 99											    LDA #$99   ;'9-32
+  1797 3122 9D 0E CE										    STA BLK+SET,X
+  1798 3125 CA											    DEX 
+  1799 3126 10 EE											    BPL COUNTBLOCK
+  1800 3128												FINCOUNT
+  1801 3128 A0 01											    LDY #$01
+  1802 312A 60											    RTS 
+  1803 312B												READBLOCK
+  1804 312B 6C 31 CD										    JMP (SALTO+SET)
+  1805 312E												ERROR?
+  1806 312E F0 0A											    BEQ ERRORAZO
+  1807 3130 A4 30											    LDY $30
+  1808 3132 30 06											    BMI ERRORAZO
+  1809 3134 AD 17 03										    LDA $0317
+  1810 3137 F0 01											    BEQ ERRORAZO
+  1811 3139 60											    RTS 
+  1812 313A												ERRORAZO
+  1813 313A 68											    PLA 
+  1814 313B 68											    PLA 
+  1815 313C												ERROR
+  1816 313C 20 C7 ED										    JSR $EDC7
+  1817 313F C0 88											    CPY #136
+  1818 3141 D0 02											    BNE NOESEOF
+  1819 3143 98											    TYA 
+  1820 3144 60											    RTS 
+  1821 3145												NOESEOF
+  1822 3145 A2 0A											    LDX #$0A
+  1823 3147												LOOPCORRIGIENDO
+  1824 3147 BD 78 CE										    LDA CORRECCION+SET,X
+  1825 314A 9D EE CD										    STA LEYENDO+SET,X
+  1826 314D CA											    DEX 
+  1827 314E 10 F7											    BPL LOOPCORRIGIENDO
+  1828 3150 18											    CLC 
+  1829 3151 AD 30 02										    LDA 560
+  1830 3154 85 00											    STA $00
+  1831 3156 AD 31 02										    LDA 561
+  1832 3159 85 01											    STA $01
+  1833 315B A0 0A											    LDY #$0A
+  1834 315D												SAVEVIEJO
+  1835 315D B1 00											    LDA ($00),Y
+  1836 315F 48											    PHA 
+  1837 3160 C8											    INY 
+  1838 3161 C0 0D											    CPY #$0D
+  1839 3163 D0 F8											    BNE SAVEVIEJO
+  1840 3165												JUSTO
+  1841 3165 AD 0B D4										    LDA $D40B
+  1842 3168 30 FB											    BMI JUSTO
+  1843 316A A0 0A											    LDY #$0A
+  1844 316C A9 01											    LDA #$01
+  1845 316E 91 00											    STA ($00),Y
+  1846 3170 AD 31 02										    LDA 561
+  1847 3173 C9 CE											    CMP # >(DISPLIST+SET)
+  1848 3175 D0 06											    BNE NOTENNIS
+  1849 3177 A9 BB											    LDA # <(DL1+SET)
+  1850 3179 A2 CE											    LDX # >(DL1+SET)
+  1851 317B D0 04											    BNE SITENNIS
+  1852 317D												NOTENNIS
+  1853 317D A9 B4											    LDA # <(DL2+SET)
+  1854 317F A2 CE											    LDX # >(DL2+SET)
+  1855 3181												SITENNIS
+  1856 3181 C8											    INY 
+  1857 3182 91 00											    STA ($00),Y
+  1858 3184 8A											    TXA 
+  1859 3185 C8											    INY 
+  1860 3186 91 00											    STA ($00),Y
+  1861 3188 20 F8 F2										    JSR $F2F8
+  1862 318B												JUSTO1
+  1863 318B AD 0B D4										    LDA $D40B
+  1864 318E 30 FB											    BMI JUSTO1
+  1865 3190 A0 0C											    LDY #$0C
+  1866 3192												RESTAURA
+  1867 3192 68											    PLA 
+  1868 3193 91 00											    STA ($00),Y
+  1869 3195 88											    DEY 
+  1870 3196 C0 09											    CPY #$09
+  1871 3198 D0 F8											    BNE RESTAURA
+  1872 319A A9 34											    LDA #$34
+  1873 319C 8D 02 D3										    STA $D302
+  1874 319F A5 14											    LDA $14
+  1875 31A1 18											    CLC 
+  1876 31A2 69 32											    ADC #50
+  1877 31A4												WMOTOR
+  1878 31A4 C5 14											    CMP $14
+  1879 31A6 D0 FC											    BNE WMOTOR
+  1880 31A8												ESPERE
+  1881 31A8 AC 0B D4										    LDY $D40B
+  1882 31AB A2 05											    LDX #$05
+  1883 31AD												ESPERE1
+  1884 31AD 8E 0A D4										    STX $D40A
+  1885 31B0												ESIRG
+  1886 31B0 AD 0F D2										    LDA $D20F
+  1887 31B3 29 10											    AND #$10
+  1888 31B5 F0 F1											    BEQ ESPERE
+  1889 31B7 CC 0B D4										    CPY $D40B
+  1890 31BA D0 F4											    BNE ESIRG
+  1891 31BC CA											    DEX 
+  1892 31BD D0 EE											    BNE ESPERE1
+  1893 31BF												NOESIGUAL
+  1894 31BF A9 40											    LDA #$40
+  1895 31C1 8D 03 03										    STA $0303
+  1896 31C4 20 2F CC										    JSR READBLOCK+SET
+  1897 31C7 10 0A											    BPL NOERRORFALSO
+  1898 31C9 20 C7 ED										    JSR $EDC7
+  1899 31CC A9 34											    LDA #$34
+  1900 31CE 8D 02 D3										    STA $D302
+  1901 31D1 D0 D5											    BNE ESPERE
+  1902 31D3												NOERRORFALSO
+  1903 31D3 AD 34 CD										    LDA QUEBLK+SET+1
+  1904 31D6 10 1C											    BPL NOBLK1
+  1905 31D8 AD 80 04										    LDA $0480
+  1906 31DB 0D 81 04										    ORA $0481
+  1907 31DE D0 29											    BNE VALLAERROR
+  1908 31E0 20 EA CC										    JSR CHANGEMSG+SET
+  1909 31E3 4C 0C CC										    JMP VUELTABLK1+SET
+  1910 31E6												CHANGEMSG
+  1911 31E6 A2 0A											    LDX #$0A
+  1912 31E8												LOOPLECTURA
+  1913 31E8 BD 82 CE										    LDA LECTURA+SET,X
+  1914 31EB 9D EE CD										    STA LEYENDO+SET,X
+  1915 31EE CA											    DEX 
+  1916 31EF 10 F7											    BPL LOOPLECTURA
+  1917 31F1 A0 01											    LDY #$01
+  1918 31F3 60											    RTS 
+  1919 31F4												NOBLK1
+  1920 31F4 A2 01											    LDX #$01
+  1921 31F6												LOOPLUGAR
+  1922 31F6 BD 80 04										    LDA $0480,X
+  1923 31F9 DD 33 CD										    CMP QUEBLK+SET,X
+  1924 31FC 90 C1											    BCC NOESIGUAL
+  1925 31FE D0 09											    BNE VALLAERROR
+  1926 3200 CA											    DEX 
+  1927 3201 10 F3											    BPL LOOPLUGAR
+  1928 3203 20 EA CC										    JSR CHANGEMSG+SET
+  1929 3206 4C 07 CC										    JMP NEXT+SET
+  1930 3209												VALLAERROR
+  1931 3209 4C 40 CC										    JMP ERROR+SET
+  1932 320C												INTERRUPCION
+  1933 320C AD EE CD										    LDA LEYENDO+SET
+  1934 320F 29 7F											    AND #$7F
+  1935 3211 F0 02											    BEQ BYTESLOOP
+  1936 3213 D0 14											    BNE NOES9I
+  1937 3215												BYTESLOOP
+  1938 3215 A2 04											    LDX #$04
+  1939 3217												BYTESLOOP1
+  1940 3217 FE 00 CE										    INC BYTES+SET,X
+  1941 321A BD 00 CE										    LDA BYTES+SET,X
+  1942 321D C9 9A											    CMP #$9A   ;'9-31
+  1943 321F D0 08											    BNE NOES9I
+  1944 3221 A9 90											    LDA #$90   ;'0-32
+  1945 3223 9D 00 CE										    STA BYTES+SET,X
+  1946 3226 CA											    DEX 
+  1947 3227 10 EE											    BPL BYTESLOOP1
+  1948 3229												NOES9I
+  1949 3229 AD 0D D2										    LDA $D20D
+  1950 322C 60											    RTS 
+  1951 322D												SALTO 
+  1952 322D 00 00											    .DBYTE 0
+  1953 322F												QUEBLK 
+  1954 322F 00 00											    .DBYTE 0
+  1955 3231												TENMEBLK
+  1956 3231 10 10 10										    .BYTE "000"
+  1957 3234												MENSAJEERROR
+  1958 3234 00 00 00 32 25 22 2F 22 29 2E 25 00 33 35 00 23 21 33 33 25 34 34 25 00 13 00 36 35 +       .SB "   REBOBINE SU CASSETTE 3 VUELTAS DE    "
+  1959 325C 00 00 00 23 2F 2E 34 21 24 2F 32 0C 00 30 32 25 33 29 2F 2E 25 00			    .SB "   CONTADOR, PRESIONE "
+  1960 3272 D9											    .BY $D9
+  1961 3273 B0 AC A1 B9										    .SB +128,"PLAY"
+  1962 3277 59											    .BY $59
+  1963 3278 39											    .SB "Y"
+  1964 3279 D9											    .BY $D9
+  1965 327A B2 A5 B4 B5 B2 AE									    .SB +128,"RETURN"
+  1966 3280 59											    .BY $59
+  1967 3281 00 00 00										    .SB "   "
+  1968 3284												PANTALLA
+  1969 3284 AA AA AA AA AA AA AA AA AA AA AA AA AA AA AA AA AA AA AA AA				    .BY +128,"********************"
+  1970 3298												PERS 
+  1971 3298 80 80											    .SB +128,"  "
+  1972 329A												NUMERO1 
+  1973 329A 90 90 90										    .SB +128,"000"
+  1974 329D 80 80 80 80 80 8A 80 91 80 AA B5 A7 A1 A4 AF B2 8D A6 B2 AF AE B4 AF AE 80 8A 80 80 +       .SB +128,"     * 1 JUGADOR-FRONTON *    "
+  1975 32BB												NUMERO2 
+  1976 32BB 90 90 90 80 80										    .SB +128,"000  "
+  1977 32C0												MENSAJE
+  1978 32C0 80 80 AD B0 AD 80 80 80 80 8A 80 A3 A1 B2 A7 A1 AE A4 AF 80 80 B0 B2 AF A7 B2 A1 AD +       .SB +128,"  MPM    * CARGANDO  PROGRAMA *    MPM  "
+  1979 32E8 80 80											    .SB +128,"  "
+  1980 32EA												LEYENDO
+  1981 32EA 80 88 B2 89 8D 91 99 98 98 80 80 80 A2 B9 B4 A5 B3 9A					    .SB +128," (R)-1988   BYTES:"
+  1982 32FC												BYTES
+  1983 32FC 90 90 90 90 90 80 80 A2 AC AF B1 B5 A5 9A						    .SB +128,"00000  BLOQUE:"
+  1984 330A												BLK
+  1985 330A 90 90 90 80 80 80									    .SB +128,"000   "
+  1986 3310 AA AA AA AA AA AA AA AA AA AA AA AA AA AA AA AA AA AA AA AA				    .BY +128,"********************"
+  1987 3324												PER2
+  1988 3324 80 80 90 90 90 80 80 80 80 80 8A 80 92 80 AA B5 A7 A1 A4 AF B2 A5 B3 8D B4 A5 AE A9 +       .SB +128,"  000     * 2 JUGADORES-TENIS *    000  "
+  1989 334C												PER1
+  1990 334C 80 80 90 90 90 80 80 80 80 80 8A 80 91 80 AA B5 A7 A1 A4 AF B2 8D A6 B2 AF AE B4 AF +       .SB +128,"  000     * 1 JUGADOR-FRONTON *    000  "
+  1991 3374												CORRECCION
+  1992 3374 A3 AF B2 B2 A5 A3 A3 A9 AF AE								    .SB +128,"CORRECCION"
+  1993 337E												LECTURA
+  1994 337E 80 88 B2 89 8D 91 99 98 98 80								    .SB +128," (R)-1988 "
+  1995 3388												CARGADO
+  1996 3388 80 80 80 80 B0 B2 AF A7 B2 A1 AD A1 80 A3 A1 B2 A7 A1 A4 AF 8C 80 B0 B2 A5 B3 A9 AF +       .SB +128,"    PROGRAMA CARGADO, PRESIONE START    "
+  1997 33B0												DL2
+  1998 33B0 42											    .BY 64+2
+  1999 33B1 38 CD											    .WO MENSAJEERROR+SET
+  2000 33B3 02 41											    .BY 2,65
+  2001 33B5 20 BC											    .WO $BC20
+  2002 33B7												DL1
+  2003 33B7 42											    .BY 64+2
+  2004 33B8 38 CD											    .WO MENSAJEERROR+SET
+  2005 33BA 02 70 70 70 70 70 70 70 70 70 70 70 70 70 70 70 70					    .BY 2,112,112,112,112,112,112,112,112,112,112,112,112,112,112,112,112
+  2006 33CB 42											    .BY 64+2
+  2007 33CC C4 CD											    .WO MENSAJE+SET
+  2008 33CE 02 08 08										    .BY 2,8,8
+  2009 33D1 41											    .BY 65
+  2010 33D2 D8 CE											    .WO DISPLIST+SET
+  2011 33D4												DISPLIST
+  2012 33D4 48											    .BYTE 64+8
+  2013 33D5 88 CD											    .WORD PANTALLA+SET
+  2014 33D7 08 02 70 70 70 70 70 70 70								    .BYTE 8,2,112,112,112,112,112,112,112
+  2015 33E0												AQUIJUMP
+  2016 33E0 70 70 70 70 70 70 70 70 70 70 70 70 70 70 70 70 00					    .BY 112,112,112,112,112,112,112,112,112,112,112,112,112,112,112,112,0
+  2017 33F1 42											    .BY 64+2
+  2018 33F2												CUALPANTALLA
+  2019 33F2 C4 CD											    .WO MENSAJE+SET
+  2020 33F4 02 08 08										    .BY 2,8,8
+  2021 33F7 41											    .BY 65
+  2022 33F8 D8 CE											    .WO DISPLIST+SET
+  2023 33FA												BUFFER
+  2024 33FA												FINBLKDOS
+  2025 33FA												    ORG $4000
+  2026 4000												GAMEA
+  2027 = 9800											Z   =   $D800-*
+  2028 4000-45FB> A9 22										    LDA # <(GAME1A+Z)
+  2029 4002 85 CB											    STA $CB
+  2030 4004 A9 D8											    LDA # >(GAME1A+Z)
+  2031 4006 85 CC											    STA $CC
+  2032 4008 A0 00											    LDY #$00
+  2033 400A												EOR29LOOP
+  2034 400A B1 CB											    LDA ($CB),Y
+  2035 400C 49 29											    EOR #$29
+  2036 400E 91 CB											    STA ($CB),Y
+  2037 4010 E6 CB											    INC $CB
+  2038 4012 D0 02											    BNE BCC
+  2039 4014 E6 CC											    INC $CC
+  2040 4016												BCC
+  2041 4016 A5 CC											    LDA $CC
+  2042 4018 C9 DD											    CMP # >(FIN+Z)
+  2043 401A D0 EE											    BNE EOR29LOOP
+  2044 401C A5 CB											    LDA $CB
+  2045 401E C9 FC											    CMP # <(FIN+Z)
+  2046 4020 D0 E8											    BNE EOR29LOOP
+  2047 4022												GAME1A
+  2048 4022 4C 85 D8										    JMP COMIENZOLOAD+Z
+  2049 4025												SETCANT
+  2050 4025 A2 10											    LDX #$10
+  2051 4027 9D 48 03										    STA $0348,X
+  2052 402A 98											    TYA 
+  2053 402B 9D 49 03										    STA $0349,X
+  2054 402E 60											    RTS 
+  2055 402F												READ2
+  2056 402F A9 02											    LDA #$02
+  2057 4031 A0 00											    LDY #$00
+  2058 4033 20 25 D8										    JSR SETCANT+Z
+  2059 4036												READ3
+  2060 4036 A9 FC											    LDA # <(FIN+Z)
+  2061 4038 A0 DD											    LDY # >(FIN+Z)
+  2062 403A												SETPOS
+  2063 403A 9D 44 03										    STA $0344,X
+  2064 403D 98											    TYA 
+  2065 403E 9D 45 03										    STA $0345,X
+  2066 4041 A9 07											    LDA #$07
+  2067 4043 9D 42 03										    STA $0342,X
+  2068 4046 20 56 E4										    JSR $E456
+  2069 4049 10 03											    BPL NOEOF
+  2070 404B 4C F2 DC										    JMP INICIOBOOT+Z
+  2071 404E												NOEOF
+  2072 404E A2 10											    LDX #$10
+  2073 4050 60											    RTS 
+  2074 4051												BYTELENTO               ; D851
+  2075 4051 00											    .BY $00
+  2076 4052												LEEMULA
+  2077 4052 A9 01											    LDA #$01
+  2078 4054 8D 51 D8										    STA BYTELENTO+Z
+  2079 4057												LEEMULA1
+  2080 4057 AD 0F D2										    LDA $D20F
+  2081 405A 29 10											    AND #$10
+  2082 405C F0 F9											    BEQ LEEMULA1
+  2083 405E												FINSTART
+  2084 405E AD 0F D2										    LDA $D20F
+  2085 4061 29 10											    AND #$10
+  2086 4063 D0 F9											    BNE FINSTART
+  2087 4065 A9 F6											    LDA #$00-10
+  2088 4067 85 14											    STA 20
+  2089 4069												ESPERO12
+  2090 4069 A5 14											    LDA 20
+  2091 406B D0 FC											    BNE ESPERO12
+  2092 406D												LEOBIT
+  2093 406D 18											    CLC 
+  2094 406E AD 0F D2										    LDA $D20F
+  2095 4071 29 10											    AND #$10
+  2096 4073 F0 01											    BEQ LEICERO
+  2097 4075 38											    SEC 
+  2098 4076												LEICERO
+  2099 4076 2E 51 D8										    ROL BYTELENTO+Z
+  2100 4079 B0 06											    BCS FINBYTELENTO
+  2101 407B A9 F9											    LDA #$00-7
+  2102 407D 85 14											    STA 20
+  2103 407F D0 E8											    BNE ESPERO12
+  2104 4081												FINBYTELENTO
+  2105 4081 AD 51 D8										    LDA BYTELENTO+Z
+  2106 4084 60											    RTS 
+  2107 4085												COMIENZOLOAD
+  2108 4085 AC 0B D4										    LDY $D40B
+  2109 4088 30 FB											    BMI COMIENZOLOAD
+  2110 408A A9 5F											    LDA # <$E45F
+  2111 408C 8D 22 02										    STA $0222
+  2112 408F A9 E4											    LDA # >$E45F
+  2113 4091 8D 23 02										    STA $0223
+  2114 4094 A9 00											    LDA #$00
+  2115 4096 8D 00 D2										    STA $D200
+  2116 4099 8D 01 D2										    STA $D201
+  2117 409C 8D 02 D2										    STA $D202
+  2118 409F												BORRAMEM
+  2119 409F A9 04											    LDA #$04
+  2120 40A1 85 01											    STA $01
+  2121 40A3 A9 00											    LDA #$00
+  2122 40A5 85 00											    STA $00
+  2123 40A7 A8											    TAY 
+  2124 40A8												ERASERAM
+  2125 40A8 91 00											    STA ($00),Y
+  2126 40AA C8											    INY 
+  2127 40AB D0 FB											    BNE ERASERAM
+  2128 40AD E6 01											    INC $01
+  2129 40AF A6 01											    LDX $01
+  2130 40B1												PONERC0
+  2131 40B1 E0 C0											    CPX #$C0
+  2132 40B3 D0 F3											    BNE ERASERAM
+  2133 40B5 A2 02											    LDX #$02
+  2134 40B7												ZLOOPCEROS
+  2135 40B7 BD 35 CD										    LDA TENMEBLK+SET,X
+  2136 40BA 9D 0E CE										    STA BLK+SET,X
+  2137 40BD A9 90											    LDA #$90   ;'0-32
+  2138 40BF 9D 02 CE										    STA BYTES+2+SET,X
+  2139 40C2 CA											    DEX 
+  2140 40C3 10 F2											    BPL ZLOOPCEROS
+  2141 40C5 8D 01 CE										    STA BYTES+1+SET
+  2142 40C8 A2 03											    LDX #$03
+  2143 40CA A9 00											    LDA #$00
+  2144 40CC												NIRUNNISTART
+  2145 40CC 9D E0 02										    STA $02E0,X
+  2146 40CF CA											    DEX 
+  2147 40D0 10 FA											    BPL NIRUNNISTART
+  2148 40D2 8D F8 DD										    STA FBOOT+Z
+  2149 = 00DC											PMBASE = $DC
+  2150 = D300											JOYST = $D300
+  2151 = D010											BOTON1 = $D010
+  2152 = D011											BOTON2 = $D011
+  2153 = 02C0											COLORP0 = $02C0
+  2154 = D000											HPOSP0 = $D000
+  2155 = D001											HPOSP1 = $D001
+  2156 = D002											HPOSP2 = $D002
+  2157 = D007											DIVISION = $D007
+  2158 = D01F											CONSOL = $D01F
+  2159 = D20A											RANDOM = $D20A
+  2160 = DF10											BOLITA = PMBASE*$0100+768+16
+  2161 = DE10											P0  =   PMBASE*$0100+512+16
+  2162 = DE90											P1  =   PMBASE*$0100+640+16
+  2163 40D5												INICIO                      ;D8D5
+  2164 40D5 A0 11											    LDY #17
+  2165 40D7 A9 EA											    LDA #$EA
+  2166 40D9												NOPDLIVBI
+  2167 40D9 99 37 C1										    STA $C137,Y
+  2168 40DC 88											    DEY 
+  2169 40DD 10 FA											    BPL NOPDLIVBI
+  2170 40DF A0 02											    LDY #$02
+  2171 40E1												NOSHADOWS
+  2172 40E1 99 6F C1										    STA $C16F,Y
+  2173 40E4 99 78 C1										    STA $C178,Y
+  2174 40E7 88											    DEY 
+  2175 40E8 10 F7											    BPL NOSHADOWS
+  2176 40EA A9 00											    LDA #0
+  2177 40EC 8D 74 D9										    STA START+Z
+  2178 40EF A2 82											    LDX #$82
+  2179 40F1												LOOPCLR
+  2180 40F1 9D 10 DF										    STA BOLITA,X
+  2181 40F4 9D 0E DE										    STA P0-2,X
+  2182 40F7 9D 8E DE										    STA P1-2,X
+  2183 40FA CA											    DEX 
+  2184 40FB E0 FF											    CPX #$FF
+  2185 40FD D0 F2											    BNE LOOPCLR
+  2186 40FF E8											    INX 
+  2187 4100												LOOPCLR1
+  2188 4100 9D 00 DE										    STA $DE00,X
+  2189 4103 9D 00 DF										    STA $DF00,X
+  2190 4106 CA											    DEX 
+  2191 4107 D0 F7											    BNE LOOPCLR1
+  2192 4109 A9 BF											    LDA #191
+  2193 410B 8D 00 D0										    STA HPOSP0
+  2194 410E A9 00											    LDA #0
+  2195 4110 8D 01 D0										    STA HPOSP1
+  2196 4113 A9 BF											    LDA #191
+  2197 4115 8D 02 D0										    STA HPOSP2
+  2198 4118 A2 2A											    LDX #42
+  2199 411A 8E 04 D0										    STX $D004
+  2200 411D A2 CE											    LDX #206
+  2201 411F 8E 05 D0										    STX $D005
+  2202 4122 20 55 D9										    JSR SETPERS+Z
+  2203 4125 A9 3F											    LDA #63
+  2204 4127 8D 0C D0										    STA $D00C
+  2205 412A A9 03											    LDA #$03
+  2206 412C AE 6D D9										    LDX YPOS0+Z
+  2207 412F A0 0C											    LDY #$0C
+  2208 4131												DIBP1
+  2209 4131 9D 10 DE										    STA P0,X
+  2210 4134 9D 90 DE										    STA P1,X
+  2211 4137 E8											    INX 
+  2212 4138 88											    DEY 
+  2213 4139 10 F6											    BPL DIBP1
+  2214 413B A9 01											    LDA #1
+  2215 413D AE 6F D9										    LDX YPOS2+Z
+  2216 4140 9D 10 DF										    STA BOLITA,X
+  2217 4143												WFORSET
+  2218 4143 AD 0B D4										    LDA $D40B
+  2219 4146 30 FB											    BMI WFORSET
+  2220 4148 A9 7A											    LDA # <(VBI+Z)
+  2221 414A 8D 22 02										    STA $0222
+  2222 414D A9 D9											    LDA # >(VBI+Z)
+  2223 414F 8D 23 02										    STA $0223
+  2224 4152 4C 3E DC										    JMP OPEN2+Z
+  2225 4155												SETPERS
+  2226 4155 A9 02											    LDA #2
+  2227 4157 8D 6F 02										    STA 623
+  2228 415A 8D 1D D0										    STA $D01D
+  2229 415D A9 DC											    LDA #PMBASE
+  2230 415F 8D 07 D4										    STA $D407
+  2231 4162 A2 00											    LDX #0
+  2232 4164 8E 07 D0										    STX DIVISION
+  2233 4167 A9 7F											    LDA #$7F
+  2234 4169 8D 11 D0										    STA $D011
+  2235 416C 60											    RTS 
+  2236 416D 30											YPOS0 .BYTE 48
+  2237 416E 30											YPOS1 .BYTE 48
+  2238 416F 30											YPOS2 .BYTE 48
+  2239 4170 BF											XPOS2 .BYTE 191
+  2240 4171 00											XPOS1 .BYTE 0
+  2241 4172 FF											FX  .BYTE $FF
+  2242 4173 00											FY  .BYTE 0
+  2243 4174 00											START .BYTE 0
+  2244 4175 00											IMPULSO .BYTE 0
+  2245 4176 00											SELECT .BYTE 0
+  2246 4177 FF											JUEGO .BYTE $FF
+  2247 4178 00 00											SAVEVBI .DBYTE 0
+  2248 417A												VBI
+  2249 417A A9 CE											    LDA # >(DISPLIST+SET)
+  2250 417C 8D 03 D4										    STA $D403
+  2251 417F 8D 44 02										    STA $0244
+  2252 4182 8D 31 02										    STA 561
+  2253 4185 A9 D8											    LDA # <(DISPLIST+SET)
+  2254 4187 8D 02 D4										    STA $D402
+  2255 418A 8D 30 02										    STA 560
+  2256 418D A9 00											    LDA #0
+  2257 418F 85 4D											    STA 77
+  2258 4191 8D 18 D0										    STA $D018
+  2259 4194 A9 E0											    LDA #$E0
+  2260 4196 8D 09 D4										    STA $D409
+  2261 4199 A9 0E											    LDA #$0E
+  2262 419B 8D 12 D0										    STA $D012
+  2263 419E 8D 13 D0										    STA $D013
+  2264 41A1 8D 14 D0										    STA $D014
+  2265 41A4 8D 16 D0										    STA $D016
+  2266 41A7 8D 17 D0										    STA $D017
+  2267 41AA 8D 19 D0										    STA $D019
+  2268 41AD A9 D4											    LDA #212
+  2269 41AF 8D 1A D0										    STA $D01A
+  2270 41B2 A9 2A											    LDA #42
+  2271 41B4 8D 00 D4										    STA $D400
+  2272 41B7 A9 A0											    LDA #$A0
+  2273 41B9 8D 01 D2										    STA $D201
+  2274 41BC A9 00											    LDA #$00
+  2275 41BE 8D 00 D2										    STA $D200
+  2276 41C1 AD 1F D0										    LDA CONSOL
+  2277 41C4 C9 05											    CMP #$05
+  2278 41C6 D0 4A											    BNE SELECT0         ;D9C6
+  2279 41C8 AD 76 D9										    LDA SELECT+Z
+  2280 41CB D0 4A											    BNE NOCAMBIO
+  2281 41CD A9 01											    LDA #1
+  2282 41CF 8D 76 D9										    STA SELECT+Z
+  2283 41D2 A9 00											    LDA #0
+  2284 41D4 8D 74 D9										    STA START+Z
+  2285 41D7 A0 27											    LDY #39
+  2286 41D9 AD 77 D9										    LDA JUEGO+Z
+  2287 41DC 49 FF											    EOR #$FF
+  2288 41DE 8D 77 D9										    STA JUEGO+Z
+  2289 41E1 30 18											    BMI ESUNO
+  2290 41E3												CHANGE ;        2 PERS
+  2291 41E3 B9 28 CE										    LDA PER2+SET,Y
+  2292 41E6 99 9C CD										    STA PERS+SET,Y
+  2293 41E9 88											    DEY 
+  2294 41EA 10 F7											    BPL CHANGE
+  2295 41EC A9 32											    LDA #50
+  2296 41EE 8D 01 D0										    STA HPOSP1
+  2297 41F1 8D 71 D9										    STA XPOS1+Z
+  2298 41F4 A9 7F											    LDA #127
+  2299 41F6 8D 07 D0										    STA DIVISION
+  2300 41F9 D0 14											    BNE TERMINELO
+  2301 41FB												ESUNO ;         1PER
+  2302 41FB B9 50 CE										    LDA PER1+SET,Y
+  2303 41FE 99 9C CD										    STA PERS+SET,Y
+  2304 4201 88											    DEY 
+  2305 4202 10 F7											    BPL ESUNO
+  2306 4204 A9 00											    LDA #0
+  2307 4206 8D 01 D0										    STA HPOSP1
+  2308 4209 8D 71 D9										    STA XPOS1+Z
+  2309 420C 8D 07 D0										    STA DIVISION
+  2310 420F												TERMINELO
+  2311 420F 4C 5F E4										    JMP $E45F
+  2312 4212												SELECT0
+  2313 4212 A9 00											    LDA #0
+  2314 4214 8D 76 D9										    STA SELECT+Z
+  2315 4217												NOCAMBIO
+  2316 4217 AD 74 D9										    LDA START+Z
+  2317 421A D0 45											    BNE STARTED
+  2318 421C A9 00											    LDA #0
+  2319 421E AE 6F D9										    LDX YPOS2+Z
+  2320 4221 9D 10 DF										    STA BOLITA,X
+  2321 4224 AD 1F D0										    LDA CONSOL
+  2322 4227 C9 06											    CMP #$06
+  2323 4229 D0 05											    BNE NOSTART
+  2324 422B A9 FF											    LDA #$FF
+  2325 422D 8D 74 D9										    STA START+Z
+  2326 4230												NOSTART
+  2327 4230 AD 70 D9										    LDA XPOS2+Z
+  2328 4233 10 17											    BPL BOTON2?
+  2329 4235 AD 10 D0										    LDA BOTON1
+  2330 4238 D0 24											    BNE JOY
+  2331 423A AD 6D D9										    LDA YPOS0+Z
+  2332 423D 8D 6F D9										    STA YPOS2+Z
+  2333 4240 A9 BE											    LDA #190
+  2334 4242 8D 70 D9										    STA XPOS2+Z
+  2335 4245												EMPIEZELO
+  2336 4245 A9 FF											    LDA #$FF
+  2337 4247 8D 74 D9										    STA START+Z
+  2338 424A D0 C3											    BNE TERMINELO
+  2339 424C												BOTON2?
+  2340 424C AD 11 D0										    LDA BOTON2
+  2341 424F D0 0D											    BNE JOY
+  2342 4251 AD 6E D9										    LDA YPOS1+Z
+  2343 4254 8D 6F D9										    STA YPOS2+Z
+  2344 4257 A9 33											    LDA #51
+  2345 4259 8D 70 D9										    STA XPOS2+Z
+  2346 425C D0 E7											    BNE EMPIEZELO
+  2347 425E												JOY
+  2348 425E 4C 92 DB										    JMP JOYSTS+Z
+  2349 4261												STARTED
+  2350 4261 AD 72 D9										    LDA FX+Z
+  2351 4264 10 06											    BPL INCRX
+  2352 4266 20 88 DA										    JSR DECREX+Z
+  2353 4269 4C 6F DA										    JMP UD+Z
+  2354 426C												INCRX
+  2355 426C 20 FA DA										    JSR INCREX+Z
+  2356 426F												UD
+  2357 426F A9 00											    LDA #0
+  2358 4271 AE 6F D9										    LDX YPOS2+Z
+  2359 4274 9D 10 DF										    STA BOLITA,X
+  2360 4277 AD 73 D9										    LDA FY+Z
+  2361 427A 10 06											    BPL INCRY
+  2362 427C 20 80 DB										    JSR DECREY+Z
+  2363 427F 4C 92 DB										    JMP JOYSTS+Z
+  2364 4282												INCRY
+  2365 4282 20 56 DB										    JSR INCREY+Z
+  2366 4285 4C 92 DB										    JMP JOYSTS+Z
+  2367 4288												DECREX
+  2368 4288 AD 0E D0										    LDA $D00E
+  2369 428B 29 02											    AND #$02
+  2370 428D F0 20											    BEQ NOREBOTE
+  2371 428F A9 33											    LDA #$33
+  2372 4291 8D 00 D2										    STA $D200
+  2373 4294 A9 AC											    LDA #$AC
+  2374 4296 8D 01 D2										    STA $D201
+  2375 4299 AD 00 D3										    LDA JOYST
+  2376 429C 4A											    LSR
+  2377 429D 4A											    LSR
+  2378 429E 4A											    LSR
+  2379 429F 4A											    LSR
+  2380 42A0 C9 0F											    CMP #$0F
+  2381 42A2 F0 02											    BEQ NOIMPULSE1
+  2382 42A4 A9 FF											    LDA #$FF
+  2383 42A6												NOIMPULSE1
+  2384 42A6 8D 75 D9										    STA IMPULSO+Z
+  2385 42A9 AE 70 D9										    LDX XPOS2+Z
+  2386 42AC 4C EB DA										    JMP CHANGEXF+Z
+  2387 42AF												NOREBOTE
+  2388 42AF CE 70 D9										    DEC XPOS2+Z
+  2389 42B2 CE 70 D9										    DEC XPOS2+Z
+  2390 42B5 AE 70 D9										    LDX XPOS2+Z
+  2391 42B8 E0 2D											    CPX #45
+  2392 42BA B0 37											    BCS FINDECREX
+  2393 42BC AD 71 D9										    LDA XPOS1+Z
+  2394 42BF C9 28											    CMP #40
+  2395 42C1 90 05											    BCC OUT2
+  2396 42C3 A9 00											    LDA #0
+  2397 42C5 8D 74 D9										    STA START+Z
+  2398 42C8												OUT2
+  2399 42C8 A9 88											    LDA #$88
+  2400 42CA 8D 00 D2										    STA $D200
+  2401 42CD A9 AC											    LDA #$AC
+  2402 42CF 8D 01 D2										    STA $D201
+  2403 42D2 A0 02											    LDY #2
+  2404 42D4												ZERO1
+  2405 42D4 B9 9E CD										    LDA NUMERO1+SET,Y
+  2406 42D7 C9 99											    CMP #$99   ;'9-32+128
+  2407 42D9 F0 08											    BEQ NINE1
+  2408 42DB 18											    CLC 
+  2409 42DC 69 01											    ADC #1
+  2410 42DE 99 9E CD										    STA NUMERO1+SET,Y
+  2411 42E1 D0 08											    BNE CHANGEXF
+  2412 42E3												NINE1
+  2413 42E3 A9 90											    LDA #$90   ;'0+128-32
+  2414 42E5 99 9E CD										    STA NUMERO1+SET,Y
+  2415 42E8 88											    DEY 
+  2416 42E9 10 E9											    BPL ZERO1
+  2417 42EB												CHANGEXF
+  2418 42EB AD 72 D9										    LDA FX+Z
+  2419 42EE 49 FF											    EOR #$FF
+  2420 42F0 8D 72 D9										    STA FX+Z
+  2421 42F3												FINDECREX
+  2422 42F3 8E 70 D9										    STX XPOS2+Z
+  2423 42F6 8E 02 D0										    STX HPOSP2
+  2424 42F9 60											    RTS 
+  2425 42FA												INCREX
+  2426 42FA AD 0E D0										    LDA $D00E
+  2427 42FD 29 01											    AND #$01
+  2428 42FF F0 1E											    BEQ NOREBOTE1
+  2429 4301 A9 AC											    LDA #$AC
+  2430 4303 8D 01 D2										    STA $D201
+  2431 4306 A9 33											    LDA #$33
+  2432 4308 8D 00 D2										    STA $D200
+  2433 430B AD 00 D3										    LDA JOYST
+  2434 430E 29 0F											    AND #$0F
+  2435 4310 C9 0F											    CMP #$0F
+  2436 4312 F0 02											    BEQ NOIMPULSE
+  2437 4314 A9 FF											    LDA #$FF
+  2438 4316												NOIMPULSE
+  2439 4316 8D 75 D9										    STA IMPULSO+Z
+  2440 4319 AE 70 D9										    LDX XPOS2+Z
+  2441 431C 4C EB DA										    JMP CHANGEXF+Z
+  2442 431F												NOREBOTE1
+  2443 431F EE 70 D9										    INC XPOS2+Z
+  2444 4322 EE 70 D9										    INC XPOS2+Z
+  2445 4325 AE 70 D9										    LDX XPOS2+Z
+  2446 4328 E0 CD											    CPX #205
+  2447 432A 90 C7											    BCC FINDECREX
+  2448 432C												SELEFUE
+  2449 432C A9 00											    LDA #0
+  2450 432E 8D 74 D9										    STA START+Z
+  2451 4331 A9 88											    LDA #$88
+  2452 4333 8D 00 D2										    STA $D200
+  2453 4336 A9 AC											    LDA #$AC
+  2454 4338 8D 01 D2										    STA $D201
+  2455 433B A0 02											    LDY #2
+  2456 433D												ZERO2
+  2457 433D B9 BF CD										    LDA NUMERO2+SET,Y
+  2458 4340 C9 99											    CMP #$99   ;'9-32+128
+  2459 4342 F0 08											    BEQ NINE2
+  2460 4344 18											    CLC 
+  2461 4345 69 01											    ADC #1
+  2462 4347 99 BF CD										    STA NUMERO2+SET,Y
+  2463 434A D0 9F											    BNE CHANGEXF
+  2464 434C												NINE2
+  2465 434C A9 90											    LDA #$90    ;'0+128-32
+  2466 434E 99 BF CD										    STA NUMERO2+SET,Y
+  2467 4351 88											    DEY 
+  2468 4352 10 E9											    BPL ZERO2
+  2469 4354 30 95											    BMI CHANGEXF
+  2470 4356												INCREY
+  2471 4356 EE 6F D9										    INC YPOS2+Z
+  2472 4359 AD 75 D9										    LDA IMPULSO+Z
+  2473 435C 10 03											    BPL BOTAR1
+  2474 435E EE 6F D9										    INC YPOS2+Z
+  2475 4361												BOTAR1
+  2476 4361 AE 6F D9										    LDX YPOS2+Z
+  2477 4364 E0 5C											    CPX #92
+  2478 4366 90 12											    BCC FININCRY
+  2479 4368												CHANGEFY
+  2480 4368 AD 73 D9										    LDA FY+Z
+  2481 436B 49 FF											    EOR #$FF
+  2482 436D 8D 73 D9										    STA FY+Z
+  2483 4370 A9 50											    LDA #$50
+  2484 4372 8D 00 D2										    STA $D200
+  2485 4375 A9 AC											    LDA #$AC
+  2486 4377 8D 01 D2										    STA $D201
+  2487 437A												FININCRY
+  2488 437A A9 01											    LDA #1
+  2489 437C 9D 10 DF										    STA BOLITA,X
+  2490 437F 60											    RTS 
+  2491 4380												DECREY
+  2492 4380 CE 6F D9										    DEC YPOS2+Z
+  2493 4383 AD 75 D9										    LDA IMPULSO+Z
+  2494 4386 10 03											    BPL BOTAR2
+  2495 4388 CE 6F D9										    DEC YPOS2+Z
+  2496 438B												BOTAR2
+  2497 438B AE 6F D9										    LDX YPOS2+Z         ;DB8B
+  2498 438E 30 D8											    BMI CHANGEFY
+  2499 4390 10 E8											    BPL FININCRY
+  2500 4392												JOYSTS
+  2501 4392 A9 00											    LDA #0
+  2502 4394 8D 1E D0										    STA $D01E
+  2503 4397 AD 00 D3										    LDA JOYST
+  2504 439A 29 0F											    AND #$0F
+  2505 439C C9 0F											    CMP #15
+  2506 439E F0 11											    BEQ JOY2
+  2507 43A0 C9 0E											    CMP #14
+  2508 43A2 D0 06											    BNE DWN1
+  2509 43A4 20 D0 DB										    JSR J1UP+Z
+  2510 43A7 4C B1 DB										    JMP JOY2+Z
+  2511 43AA												DWN1
+  2512 43AA C9 0D											    CMP #13
+  2513 43AC D0 03											    BNE JOY2
+  2514 43AE 20 00 DC										    JSR J1DWN+Z
+  2515 43B1												JOY2
+  2516 43B1 AD 00 D3										    LDA JOYST
+  2517 43B4 4A											    LSR
+  2518 43B5 4A											    LSR
+  2519 43B6 4A											    LSR
+  2520 43B7 4A											    LSR
+  2521 43B8 C9 0F											    CMP #15
+  2522 43BA F0 11											    BEQ EXIT
+  2523 43BC C9 0E											    CMP #14
+  2524 43BE D0 06											    BNE DWN2
+  2525 43C0 20 E8 DB										    JSR J2UP+Z
+  2526 43C3 4C 5F E4										    JMP $E45F
+  2527 43C6												DWN2
+  2528 43C6 C9 0D											    CMP #13
+  2529 43C8 D0 03											    BNE EXIT
+  2530 43CA 20 1F DC										    JSR J2DWN+Z
+  2531 43CD												EXIT
+  2532 43CD 4C 5F E4										    JMP $E45F
+  2533 43D0												J1UP
+  2534 43D0 AC 6D D9										    LDY YPOS0+Z
+  2535 43D3 F0 12											    BEQ FINJ1UP
+  2536 43D5 A2 10											    LDX #16
+  2537 43D7												LOOPJ1UP
+  2538 43D7 B9 10 DE										    LDA P0,Y
+  2539 43DA 99 0E DE										    STA P0-2,Y
+  2540 43DD C8											    INY 
+  2541 43DE CA											    DEX 
+  2542 43DF 10 F6											    BPL LOOPJ1UP
+  2543 43E1 CE 6D D9										    DEC YPOS0+Z
+  2544 43E4 CE 6D D9										    DEC YPOS0+Z
+  2545 43E7												FINJ1UP
+  2546 43E7 60											    RTS 
+  2547 43E8												J2UP
+  2548 43E8 AC 6E D9										    LDY YPOS1+Z
+  2549 43EB F0 12											    BEQ FINJ2UP
+  2550 43ED A2 10											    LDX #16
+  2551 43EF												LOOPJ2UP
+  2552 43EF B9 90 DE										    LDA P1,Y
+  2553 43F2 99 8E DE										    STA P1-2,Y
+  2554 43F5 C8											    INY 
+  2555 43F6 CA											    DEX 
+  2556 43F7 10 F6											    BPL LOOPJ2UP
+  2557 43F9 CE 6E D9										    DEC YPOS1+Z
+  2558 43FC CE 6E D9										    DEC YPOS1+Z
+  2559 43FF												FINJ2UP
+  2560 43FF 60											    RTS 
+  2561 4400												J1DWN
+  2562 4400 AC 6D D9										    LDY YPOS0+Z
+  2563 4403 C0 50											    CPY #80
+  2564 4405 F0 17											    BEQ FINJ1DWN
+  2565 4407 98											    TYA 
+  2566 4408 18											    CLC 
+  2567 4409 69 0E											    ADC #14
+  2568 440B A8											    TAY 
+  2569 440C A2 10											    LDX #16
+  2570 440E												LOOPJ1DWN
+  2571 440E B9 0E DE										    LDA P0-2,Y
+  2572 4411 99 10 DE										    STA P0,Y
+  2573 4414 88											    DEY 
+  2574 4415 CA											    DEX 
+  2575 4416 10 F6											    BPL LOOPJ1DWN
+  2576 4418 EE 6D D9										    INC YPOS0+Z
+  2577 441B EE 6D D9										    INC YPOS0+Z
+  2578 441E												FINJ1DWN
+  2579 441E 60											    RTS 
+  2580 441F												J2DWN
+  2581 441F AC 6E D9										    LDY YPOS1+Z
+  2582 4422 C0 50											    CPY #80
+  2583 4424 F0 17											    BEQ FINJ2DWN
+  2584 4426 98											    TYA 
+  2585 4427 18											    CLC 
+  2586 4428 69 0E											    ADC #14
+  2587 442A A8											    TAY 
+  2588 442B A2 10											    LDX #16
+  2589 442D												LOOPJ2DWN
+  2590 442D B9 8E DE										    LDA P1-2,Y
+  2591 4430 99 90 DE										    STA P1,Y
+  2592 4433 88											    DEY 
+  2593 4434 CA											    DEX 
+  2594 4435 10 F6											    BPL LOOPJ2DWN
+  2595 4437 EE 6E D9										    INC YPOS1+Z
+  2596 443A EE 6E D9										    INC YPOS1+Z
+  2597 443D												FINJ2DWN
+  2598 443D 60											    RTS 
+  2599 443E												OPEN2
+  2600 443E A9 FF											    LDA #$FF
+  2601 4440 8D 40 03										    STA $0340
+  2602 4443 A2 10											    LDX #$10
+  2603 4445 A9 03											    LDA #$03
+  2604 4447 9D 42 03										    STA $0342,X
+  2605 444A A9 F9											    LDA # <(DEVICE+Z)
+  2606 444C 9D 44 03										    STA $0344,X
+  2607 444F A9 DD											    LDA # >(DEVICE+Z)
+  2608 4451 9D 45 03										    STA $0345,X
+  2609 4454 A9 04											    LDA #$04
+  2610 4456 9D 4A 03										    STA $034A,X
+  2611 4459 A9 80											    LDA #$80
+  2612 445B 9D 4B 03										    STA $034B,X
+  2613 445E A9 0C											    LDA #$0C
+  2614 4460 8D FC 02										    STA 764
+  2615 4463 20 56 E4										    JSR $E456
+  2616 4466												ZREAD
+  2617 4466 20 2F D8										    JSR READ2+Z
+  2618 4469 AD FC DD										    LDA FIN+Z
+  2619 446C 2D FD DD										    AND FIN+1+Z
+  2620 446F C9 FF											    CMP #$FF
+  2621 4471 D0 0F											    BNE SERABOOT?
+  2622 4473 A9 73											    LDA # <$E474-1
+  2623 4475 85 0C											    STA $0C
+  2624 4477 A9 E3											    LDA # >$E474-1
+  2625 4479 85 0D											    STA $0D
+  2626 447B A9 01											    LDA #$01
+  2627 447D 8D F8 DD										    STA FBOOT+Z
+  2628 4480 D0 E4											    BNE ZREAD
+  2629 4482												SERABOOT?
+  2630 4482 AD E0 02										    LDA $02E0
+  2631 4485 0D E1 02										    ORA $02E1
+  2632 4488 D0 0C											    BNE RUNOK
+  2633 448A AD FC DD										    LDA FIN+Z
+  2634 448D 8D E0 02										    STA $02E0
+  2635 4490 AD FD DD										    LDA FIN+1+Z
+  2636 4493 8D E1 02										    STA $02E1
+  2637 4496												RUNOK
+  2638 4496 AD F8 DD										    LDA FBOOT+Z
+  2639 4499 D0 03											    BNE NOESBOOT
+  2640 449B 4C 8E DD										    JMP ESBOOT+Z
+  2641 449E												NOESBOOT
+  2642 449E AD FC DD										    LDA FIN+Z
+  2643 44A1 8D 40 02										    STA $0240
+  2644 44A4 AD FD DD										    LDA FIN+1+Z
+  2645 44A7 8D 41 02										    STA $0241
+  2646 44AA 20 2F D8										    JSR READ2+Z
+  2647 44AD 38											    SEC 
+  2648 44AE AD FC DD										    LDA FIN+Z
+  2649 44B1 ED 40 02										    SBC $0240
+  2650 44B4 9D 48 03										    STA $0348,X
+  2651 44B7 AD FD DD										    LDA FIN+1+Z
+  2652 44BA ED 41 02										    SBC $0241
+  2653 44BD 9D 49 03										    STA $0349,X
+  2654 44C0 FE 48 03										    INC $0348,X
+  2655 44C3 D0 03											    BNE NOCARRYY
+  2656 44C5 FE 49 03										    INC $0349,X
+  2657 44C8												NOCARRYY
+  2658 44C8 AD 40 02										    LDA $0240
+  2659 44CB AC 41 02										    LDY $0241
+  2660 44CE 20 3A D8										    JSR SETPOS+Z
+  2661 44D1 AD E2 02										    LDA $02E2
+  2662 44D4 0D E3 02										    ORA $02E3
+  2663 44D7 F0 0B											    BEQ NOSUBRUTIN
+  2664 44D9												CONSUBRUTINA
+  2665 44D9 20 E7 DC										    JSR USERSUB+Z
+  2666 44DC A9 00											    LDA #$00
+  2667 44DE 8D E2 02										    STA $02E2
+  2668 44E1 8D E3 02										    STA $02E3
+  2669 44E4												NOSUBRUTIN
+  2670 44E4 4C 66 DC										    JMP ZREAD+Z
+  2671 44E7												USERSUB
+  2672 44E7 6C E2 02										    JMP ($02E2)
+  2673 44EA												CORREPROGRAMA           ;DCEA
+  2674 44EA A9 FF											    LDA #$FF
+  2675 44EC 8D 01 D3										    STA $D301
+  2676 44EF 6C E0 02										    JMP ($02E0)
+  2677 44F2												INICIOBOOT
+  2678 44F2 A9 E2											    LDA #$00-30
+  2679 44F4 85 14											    STA 20
+  2680 44F6												WRELOS
+  2681 44F6 AD 0F D2										    LDA $D20F
+  2682 44F9 29 10											    AND #$10
+  2683 44FB F0 F5											    BEQ INICIOBOOT
+  2684 44FD A5 14											    LDA 20
+  2685 44FF D0 F5											    BNE WRELOS
+  2686 4501 A0 02											    LDY #$02            ;DD01
+  2687 4503												LEOLENTO
+  2688 4503 20 52 D8										    JSR LEEMULA+Z
+  2689 4506 99 E0 03										    STA $03E0,Y         ;DD06
+  2690 4509 88											    DEY 
+  2691 450A 10 F7											    BPL LEOLENTO
+  2692 450C AD E0 03										    LDA $03E0
+  2693 450F CD E2 03										    CMP $03E2
+  2694 4512 F0 15											    BEQ JUSTOAHORA
+  2695 4514 CD E1 03										    CMP $03E1
+  2696 4517 F0 10											    BEQ JUSTOAHORA
+  2697 4519 AD E2 03										    LDA $03E2
+  2698 451C CD E1 03										    CMP $03E1
+  2699 451F F0 08											    BEQ JUSTOAHORA
+  2700 4521												LEYODISTINTO
+  2701 4521 A9 03											    LDA #$03
+  2702 4523 8D B2 D8										    STA PONERC0+Z+1
+  2703 4526 4C 9F D8										    JMP BORRAMEM+Z
+  2704 4529												JUSTOAHORA
+  2705 4529 A9 3C											    LDA #$3C
+  2706 452B 8D 02 D3										    STA $D302
+  2707 452E A2 27											    LDX #39
+  2708 4530												PROGRAMAENMEMORIA
+  2709 4530 BD 8C CE										    LDA CARGADO+SET,X
+  2710 4533 9D C4 CD										    STA MENSAJE+SET,X
+  2711 4536 CA											    DEX 
+  2712 4537 10 F7											    BPL PROGRAMAENMEMORIA
+  2713 4539												PRESIONOCAMBIO?
+  2714 4539 AD 1F D0										    LDA CONSOL
+  2715 453C C9 06											    CMP #$06
+  2716 453E D0 F9											    BNE PRESIONOCAMBIO?
+  2717 4540												PRESIONOCAMBIO?2
+  2718 4540 AD 1F D0										    LDA CONSOL
+  2719 4543 C9 07											    CMP #$07
+  2720 4545 D0 F9											    BNE PRESIONOCAMBIO?2
+  2721 												    ; SUELTA START ANTES DE EMPEZAR
+  2722 4547 A2 07											    LDX #$07
+  2723 4549												LLEVARAM
+  2724 4549 BD EA DC										    LDA CORREPROGRAMA+Z,X
+  2725 454C 9D 92 03										    STA $0392,X
+  2726 454F CA											    DEX 
+  2727 4550 10 F7											    BPL LLEVARAM
+  2728 4552												JUSTO2
+  2729 4552 AD 0B D4										    LDA $D40B
+  2730 4555 30 FB											    BMI JUSTO2
+  2731 4557 A9 5F											    LDA # <$E45F
+  2732 4559 8D 22 02										    STA $0222
+  2733 455C A9 E4											    LDA # >$E45F
+  2734 455E 8D 23 02										    STA $0223
+  2735 4561 A9 00											    LDA #$00
+  2736 4563 8D 6F 02										    STA 623
+  2737 4566 A2 1F											    LDX #$1F
+  2738 4568												PMARGEN
+  2739 4568 9D 00 D0										    STA $D000,X
+  2740 456B CA											    DEX 
+  2741 456C 10 FA											    BPL PMARGEN
+  2742 456E A9 00											    LDA #$00
+  2743 4570 8D 44 02										    STA $0244
+  2744 4573 A9 02											    LDA #$02
+  2745 4575 85 09											    STA $09
+  2746 4577 AD E0 02										    LDA $02E0
+  2747 457A 85 02											    STA $02
+  2748 457C 85 0A											    STA $0A
+  2749 457E AD E1 02										    LDA $02E1
+  2750 4581 85 03											    STA $03
+  2751 4583 85 0B											    STA $0B
+  2752 4585 A5 0D											    LDA $0D
+  2753 4587 48											    PHA 
+  2754 4588 A5 0C											    LDA $0C
+  2755 458A 48											    PHA 
+  2756 458B												SINRESET
+  2757 458B 4C 92 03										    JMP $0392
+  2758 458E												ESBOOT
+  2759 458E AD FC DD										    LDA FIN+Z
+  2760 4591 8D 40 02										    STA $0240
+  2761 4594 AD FD DD										    LDA FIN+1+Z
+  2762 4597 8D 41 02										    STA $0241
+  2763 459A 20 2F D8										    JSR READ2+Z
+  2764 459D 18											    CLC 
+  2765 459E AD FC DD										    LDA FIN+Z
+  2766 45A1 69 06											    ADC #$06
+  2767 45A3 85 04											    STA $04
+  2768 45A5 AD FD DD										    LDA FIN+1+Z
+  2769 45A8 69 00											    ADC #$00
+  2770 45AA 85 05											    STA $05
+  2771 45AC 20 2F D8										    JSR READ2+Z
+  2772 45AF AD FC DD										    LDA FIN+Z
+  2773 45B2 85 0C											    STA $0C
+  2774 45B4 AD FD DD										    LDA FIN+1+Z
+  2775 45B7 85 0D											    STA $0D
+  2776 45B9 A0 06											    LDY #$06
+  2777 45BB												MULTIPLICA
+  2778 45BB 0E 41 02										    ASL $0241
+  2779 45BE 2E 40 02										    ROL $0240
+  2780 45C1 88											    DEY 
+  2781 45C2 10 F7											    BPL MULTIPLICA
+  2782 45C4 AD 40 02										    LDA $0240
+  2783 45C7 9D 49 03										    STA $0349,X
+  2784 45CA AD 41 02										    LDA $0241
+  2785 45CD 9D 48 03										    STA $0348,X
+  2786 45D0 A5 04											    LDA $04
+  2787 45D2 9D 44 03										    STA $0344,X
+  2788 45D5 8D E0 02										    STA $02E0
+  2789 45D8 A5 05											    LDA $05
+  2790 45DA 9D 45 03										    STA $0345,X
+  2791 45DD 8D E1 02										    STA $02E1
+  2792 45E0 A9 07											    LDA #$07
+  2793 45E2 9D 42 03										    STA $0342,X
+  2794 45E5 20 56 E4										    JSR $E456
+  2795 45E8 38											    SEC 
+  2796 45E9 A5 0C											    LDA $0C
+  2797 45EB E9 01											    SBC #$01
+  2798 45ED 85 0C											    STA $0C
+  2799 45EF A5 0D											    LDA $0D
+  2800 45F1 E9 00											    SBC #$00
+  2801 45F3 85 0D											    STA $0D
+  2802 45F5 4C F2 DC										    JMP INICIOBOOT+Z
+  2803 45F8												FBOOT
+  2804 45F8 00											    .BY 0
+  2805 45F9												DEVICE
+  2806 45F9 43 3A 9B										    .BY 'C:',$9B
+  2807 45FC												FIN

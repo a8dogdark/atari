@@ -1,0 +1,46 @@
+mads 2.0.6 build 58 (28 Jan 17)
+Source: C:\Users\pc-2\Documents\atari\atari\new\paginas\pagina4\PAGINA4.ASM
+     1 = 0047			GENDAT = $47
+     2 				;
+     3 					ORG $03FD
+     4 FFFF> 03FD-0463> 55 55 + 	.BYTE $55,$55,$FE
+     5 0400 AD 01 D3		    LDA $D301
+     6 0403 29 02		    AND #$02
+     7 0405 F0 17		    BEQ ERROR
+     8 0407 AD 64 04		    LDA FIN
+     9 040A 85 47		    STA GENDAT
+    10 040C A2 0B		    LDX #$0B
+    11 040E			MOVE
+    12 040E BD 58 04		    LDA SIOV,X
+    13 0411 9D 00 03		    STA $0300,X
+    14 0414 CA			    DEX
+    15 0415 10 F7		    BPL MOVE
+    16 0417 20 59 E4		    JSR $E459
+    17 041A 30 02		    BMI ERROR
+    18 041C 18			    CLC
+    19 041D 60			    RTS
+    20 041E			ERROR
+    21 041E AE FC BF		    LDX $BFFC
+    22 0421 AC FD BF		    LDY $BFFD
+    23 0424 8E 30 02		    STX $0230
+    24 0427 8C 31 02		    STY $0231
+    25 042A A0 00		    LDY #$00
+    26 042C			LER
+    27 042C B9 3D 04		    LDA TABLA,Y
+    28 042F 91 58		    STA ($58),Y
+    29 0431 C8			    INY
+    30 0432 C0 1B		    CPY #27
+    31 0434 D0 F6		    BNE LER
+    32 0436 A9 3C		    LDA #$3C
+    33 0438 8D 02 D3		    STA $D302
+    34 043B			LOOP
+    35 043B D0 FE		    BNE LOOP
+    36 043D			TABLA
+    37 043D 25 32 32 2F 32 00 +     .SB "ERROR !!! CARGUE NUEVAMENTE"
+    38 0458			SIOV
+    39 0458 60 00 52 40		    .BYTE $60,$00,$52,$40
+    40 045C FE 06		    .WORD $06FE
+    41 045E 23 00		    .BYTE $23,$00
+    42 0460 AA AA		    .WORD $AAAA
+    43 0462 00 80		    .BYTE $00,$80
+    44 0464			FIN

@@ -1,0 +1,288 @@
+;SAVE#D:PAGLOAD.ASM
+BAFER = PFIN+11
+GENDAT = $47
+;
+	ORG $06FE
+	.BYTE $55,$55
+    LDX #$00
+    STX 580
+    INX
+    STX $09
+    JSR ?PFIN
+    JMP START
+NBYTES
+    .BYTE 252
+FLAGY
+    .BYTE 0
+FINISH
+    .BYTE 0,0
+CONTADOR2
+	.BYTE 0
+SIOV
+    .BYTE $60,$00,$52,$40
+    .WORD BAFER
+    .BYTE $23,$00
+    .WORD $0100
+    .BYTE $00,$FE
+CDL
+    LDX # <DLIST
+    LDY # >DLIST
+    STX $0230
+    STX $D402
+    STY $0231
+    STY $D403
+    LDA #$02	;$02C8
+    STA $02C6
+    STA $02C8
+    STA $D018
+    RTS
+DLIST
+    .BYTE $70,$70,$70,$42
+    .WORD MENSAJE
+    .BYTE $70,$06,$70,$02,$70,$70
+    .BYTE $70,$70,$06,$70,$70,$06
+    .BYTE $70,$46
+DLERR
+    .WORD NAME
+    .BYTE $70,$70,$70,$70,$02,$70
+    .BYTE $06
+    .BYTE $41
+    .WORD DLIST
+ERROR
+    LDA #$3C
+    STA $D302
+    LDA #$FD
+    JSR $F2B0
+    JSR CDL
+    LDX # <MERR
+    LDY # >MERR
+    STX DLERR
+    STY DLERR+1
+VUELTA
+    LDA 53279
+    CMP #$06
+    BNE VUELTA
+    JSR SEARCH
+   	JSR RECUPERONOMBRE
+    JMP GRAB
+SEARCH
+    LDA #$34
+    STA $D302
+    LDX #$10
+    STX $021C
+SPEED
+    LDX $021C
+    BNE SPEED
+SIGUE
+    LDX #$FD
+    STX $14
+BUSCA
+    LDA $D20F
+    AND #$10
+    BEQ SIGUE
+    LDX $14
+    BNE BUSCA
+    RTS
+GBYTE
+    CPY NBYTES
+    BEQ GRAB
+    TYA
+ 	LDA BAFER+3,Y
+;    EOR BAFER+3,Y
+;    EOR GENDAT
+    INC GENDAT
+    INY
+    RTS
+GRAB
+    LDA $D40B
+    BNE GRAB
+    LDA PFIN
+    BEQ SERABYE
+?GRAB
+    LDX #$0B
+MSIO
+    LDA SIOV,X
+    STA $0300,X
+    DEX
+    BPL MSIO
+    JSR $E459
+    BMI ERROR
+    LDA BAFER+2
+    CMP PFIN
+    BCC ERROR
+    BEQ RETURN
+    JMP ?GRAB
+RETURN
+    LDA BAFER+255
+    STA NBYTES
+    LDX #$02
+C01
+    LDA CONTADOR,X
+    CMP #$10
+    BNE C02
+    LDA #$19
+    STA CONTADOR,X
+    DEX
+    BPL C01
+C02
+    DEC CONTADOR,X
+    DEC PFIN
+    LDY #$00
+    STY 77
+    JMP GBYTE
+SERABYE
+	LDA CONTADOR2
+	CMP #$00
+	BEQ BYE
+	DEC CONTADOR2
+	JMP ?GRAB	
+BYE
+    LDX #$FF
+    TXS
+    LDA #$3C
+    STA $D302
+    JMP ($02E0)
+RECUPERONOMBRE
+	JSR CDL
+	LDX # <NAME
+    LDY # >NAME
+    STX DLERR
+    STY DLERR+1
+	RTS
+START
+    LDY NBYTES
+LOOP
+    JSR GBYTE
+    STA MEMORY+1
+    JSR GBYTE
+    STA MEMORY+2
+    AND MEMORY+1
+    CMP #$FF
+    BEQ LOOP
+    JSR GBYTE
+    STA FINISH
+    JSR GBYTE
+    STA FINISH+1
+MBTM
+    JSR GBYTE
+MEMORY
+    STA $FFFF
+    LDA MEMORY+1
+    CMP FINISH
+    BNE OK
+    LDA MEMORY+2
+    CMP FINISH+1
+    BEQ VERFIN
+OK
+    INC MEMORY+1
+    BNE NIM
+    INC MEMORY+2
+NIM
+    JMP MBTM
+VERFIN
+    LDA $02E2
+    ORA $02E3
+    BEQ LOOP
+    LDX #$F0
+    TXS
+    STY FLAGY
+    JSR RINIT
+;   JSR SEARCH
+;
+	LDA #$34
+	STA $D302
+;
+    LDY FLAGY
+    LDX #$00
+;    TXS
+    STX $02E2
+    STX $02E3
+    JMP LOOP
+RINIT
+    LDA #$3C
+    STA $D302
+    JMP ($02E2)
+MENSAJE
+	.SB "PARA COMPUTADORAS XL-XE-256K  BY DOGDARK"
+	;        -     -
+	;     DOGDARK  SOFTWARES
+    .SB "--ACA VA EL TITULO--"
+    .SB "    Correccion de codigo - Willysoft    "
+    .SB "      PRESENTA      "
+    .SB "--ACA VA EL TITULO--"
+NAME
+ 	.SB "                    "
+    .SB "     cargara dentro de "
+CONTADOR
+    .SB "000 Bloques.     "
+	.SB " "
+	.SB +128,"sistemas"
+	.SB " stac 2020 "
+MERR
+    .SB "  -  E R R O R  -   "
+    .SB " Retroceda 3 vueltas y presione  START  "
+    .SB " "
+    .SB +128,"sistemas"
+	.SB " stac 2020 "
+PFIN
+    .BYTE 0,0,0,0,0,0,0,0,0,0,0
+?PFIN
+    LDX #$0B
+MNANB
+    LDA DSIO,X
+    STA $0300,X
+    DEX
+    BPL MNANB
+    JSR $E459
+    BPL POND
+    JMP $E477
+POND
+    LDX #19
+MNAME
+    LDA DSIO+2,X
+    STA NAME,X
+    DEX
+    BPL MNAME
+    LDX #$02
+MBLOQ
+    LDA DSIO+22,X
+    STA CONTADOR,X
+    DEX
+    BPL MBLOQ
+    LDX #$03
+    STX 65
+    LDY #$22
+    STY 559
+    STY $D400
+    LDA DSIO+25
+    STA PFIN
+    LDA DSIO+26
+    STA CONTADOR2
+    LDX #$00
+    TXA
+CLP4
+    STA $0400,X
+    INX
+    BPL CLP4
+    STA $06FE
+    STA $06FF
+PIRATEO
+	LDA MENSAJE+50
+	CMP #$73
+	BEQ PIRATEO2
+	JMP LOOPCITO
+PIRATEO2
+	LDA MENSAJE+44
+	CMP #$E4
+	BEQ PIRATEO3
+	JMP LOOPCITO
+PIRATEO3
+    JMP CDL
+LOOPCITO
+	JMP LOOPCITO
+DSIO
+    .BYTE $60,$00,$52,$40
+    .WORD DSIO
+    .BYTE $23,$00
+    .WORD 27
+    .BYTE $00,$80

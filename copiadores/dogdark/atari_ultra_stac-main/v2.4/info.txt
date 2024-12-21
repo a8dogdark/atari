@@ -1,0 +1,15 @@
+#ultimo cambio
+09-03-2020
+se elimina rutina de ?FGET
+	SEC
+	LDA LEN
+	SBC RY
+	STA CONT+1
+sea agrega sta cont+1 a 
+PONBLOQUES1
+  ;RESTO BYTES
+	SEC
+	LDA RY
+	SBC #252
+	STA RY
+	STA CONT+1   ;se agrega

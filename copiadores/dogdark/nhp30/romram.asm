@@ -1,0 +1,87 @@
+;SAVE#D:ROMRAM.ASM
+ROMRAM
+    LDX #$C0
+    LDY #$00
+    SEI 
+    LDA $D40E   ;NMIEN
+    PHA 
+    STY $D40E   ;NMIEN
+    STX $CC
+    STY $CB
+LOOPKEM
+    LDA ($CB),Y
+    DEC $D301   ;PORTB
+    STA ($CB),Y
+    INC $D301   ;PORTB
+    INY 
+    BNE LOOPKEM
+    INC $CC
+    BEQ EXITKEM
+    LDA $CC
+    CMP #$D0
+    BNE LOOPKEM
+    LDA #$D8
+    STA $CC
+    BNE LOOPKEM
+EXITKEM
+    DEC $D301   ;PORTB
+    LDX #$01
+    LDY #$4C
+    LDA #$13
+    STX $EE17
+    STY $ED8F
+    STA $ED67
+    LDX #$80
+    LDY #$03
+    STX $EBA3
+    STY $EBA8
+    LDY #$04
+    LDA #$EA
+NOPKEM
+    STA $ED85,Y
+    DEY 
+    BPL NOPKEM
+    LDY #STACFKEM-STACIKEM
+MOVEKEM
+    LDA STACIKEM,Y
+    STA $ECEF,Y
+    DEY 
+    BPL MOVEKEM
+    PLA 
+    STA $D40E   ;NMIEN
+    CLI 
+    CLC 
+    RTS 
+STACIKEM
+    LDA #$7D
+    LDX $62     ;PALNTS
+    BEQ CC0KEM
+    LDA #$64
+CC0KEM
+    CLC 
+    ADC $EE19,X
+    DEY 
+    BPL CC0KEM
+    CLC 
+    ADC $0312   ;TEMP1
+    SEC 
+    SBC #$64
+    BCC CC3KEM
+    STA $0312   ;TEMP1
+    LDY #$02
+    LDX #$06
+    LDA #$4F
+CC2KEM
+    ADC $0312   ;TEMP1
+    BCC CC1KEM
+    INY 
+    CLC 
+CC1KEM
+    DEX 
+    BNE CC2KEM
+    STA $02EE   ;CBAUDL
+    STY $02EF   ;CBAULH
+    JMP $ED96
+CC3KEM
+    JMP $ED3D
+STACFKEM
